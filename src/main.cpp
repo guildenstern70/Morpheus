@@ -1,4 +1,4 @@
-#include <SDL2/SDL.h>
+#include <SDL3/SDL.h>
 #include <iostream>
 
 constexpr int SCREEN_WIDTH = 800;
@@ -13,12 +13,17 @@ void mainLoop(SDL_Window* window,
 
     while (running) {
         while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_QUIT) {
-                running = false;
-            } else if (event.type == SDL_KEYDOWN) {
-                if (event.key.keysym.sym == SDLK_ESCAPE) {
+            switch (event.type) {
+                case SDL_EVENT_QUIT:
                     running = false;
-                }
+                    break;
+                case SDL_EVENT_KEY_DOWN:
+                    if (event.key.key == SDLK_ESCAPE) {
+                        running = false;
+                    }
+                    break;
+                default:
+                    break;
             }
         }
 
@@ -27,7 +32,9 @@ void mainLoop(SDL_Window* window,
 
         // Draw a simple rectangle as test
         SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
-        SDL_Rect rect = {SCREEN_WIDTH / 2 - 50, SCREEN_HEIGHT / 2 - 50, 50, 50};
+        SDL_FRect rect = {static_cast<float>(SCREEN_WIDTH / 2 - 50),
+                          static_cast<float>(SCREEN_HEIGHT / 2 - 50),
+                          50.0f, 50.0f};
         SDL_RenderFillRect(renderer, &rect);
 
         SDL_RenderPresent(renderer);
@@ -38,19 +45,17 @@ void mainLoop(SDL_Window* window,
     SDL_Quit();
 }
 
-int main(int argc, char* argv[]) {
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+int main() {
+    if (!SDL_Init(SDL_INIT_VIDEO)) {
         std::cerr << "SDL could not initialize! SDL_Error: " << SDL_GetError() << std::endl;
         return 1;
     }
 
     SDL_Window* window = SDL_CreateWindow(
         WINDOW_TITLE,
-        SDL_WINDOWPOS_CENTERED,
-        SDL_WINDOWPOS_CENTERED,
         SCREEN_WIDTH,
         SCREEN_HEIGHT,
-        SDL_WINDOW_SHOWN
+        0
     );
 
     if (!window) {
@@ -59,7 +64,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    SDL_Renderer* renderer = SDL_CreateRenderer(window, NULL);
     if (!renderer) {
         std::cerr << "Renderer could not be created! SDL_Error: " << SDL_GetError() << std::endl;
         SDL_DestroyWindow(window);
