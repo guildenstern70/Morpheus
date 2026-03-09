@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <cstdint>
+
 namespace Colors {
     struct Color {
         uint8_t r;
