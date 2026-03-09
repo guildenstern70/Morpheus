@@ -28,7 +28,9 @@ void Ship::update(const bool turningLeft,
                   const bool thrusting,
                   const float deltaSeconds,
                   const float turnSpeedDegPerSec,
-                  const float thrustAcceleration) {
+                  const float thrustAcceleration,
+                  const float screenWidth,
+                  const float screenHeight) {
     if (turningRight) {
         m_orientationDegrees += turnSpeedDegPerSec * deltaSeconds;
     }
@@ -47,6 +49,7 @@ void Ship::update(const bool turningLeft,
     }
 
     updatePosition(deltaSeconds);
+    wrapPosition(screenWidth, screenHeight);
 }
 
 void Ship::render(SDL_Renderer* renderer, bool showThrust) const {
@@ -103,5 +106,21 @@ void Ship::normalizeOrientation() {
 void Ship::updatePosition(float deltaSeconds) {
     m_x += m_velocityX * deltaSeconds;
     m_y += m_velocityY * deltaSeconds;
+}
+
+void Ship::wrapPosition(const float screenWidth, const float screenHeight) {
+    // Wrap horizontally
+    if (m_x < 0.0f) {
+        m_x += screenWidth;
+    } else if (m_x > screenWidth) {
+        m_x -= screenWidth;
+    }
+
+    // Wrap vertically
+    if (m_y < 0.0f) {
+        m_y += screenHeight;
+    } else if (m_y > screenHeight) {
+        m_y -= screenHeight;
+    }
 }
 

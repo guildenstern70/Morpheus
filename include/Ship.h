@@ -19,7 +19,9 @@ public:
                 bool thrusting,
                 float deltaSeconds,
                 float turnSpeedDegPerSec,
-                float thrustAcceleration);
+                float thrustAcceleration,
+                float screenWidth,
+                float screenHeight);
 
     void render(SDL_Renderer* renderer, bool showThrust) const;
 
@@ -32,5 +34,6 @@ private:
 
     void normalizeOrientation();
     void updatePosition(float deltaSeconds);
+    void wrapPosition(float screenWidth, float screenHeight);
 };
 

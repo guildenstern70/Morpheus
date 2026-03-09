@@ -11,6 +11,7 @@
 
 #include "colors.h"
 #include "config.h"
+#include "Game.h"
 #include "Ship.h"
 
 
@@ -21,6 +22,7 @@ void mainLoop(SDL_Window* window,
     bool turningLeft = false;
     bool turningRight = false;
     bool thrusting = false;
+    Game game;
     Ship ship(SHIP_CENTER_X, SHIP_CENTER_Y);
     Uint64 previousTicks = SDL_GetTicks();
     SDL_Event event;
@@ -70,7 +72,9 @@ void mainLoop(SDL_Window* window,
                     thrusting,
                     deltaSeconds,
                     SHIP_TURN_SPEED_DEG_PER_SEC,
-                    SHIP_THRUST_ACCELERATION);
+                    SHIP_THRUST_ACCELERATION,
+                    SCREEN_WIDTH,
+                    SCREEN_HEIGHT);
 
         SDL_SetRenderDrawColor(renderer,
             BACKGROUND_COLOR.r,
