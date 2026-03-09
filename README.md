@@ -2,7 +2,7 @@
 
 A modern implementation of the classic **Atari Asteroids** arcade game, built with C++ and SDL3. Destroy asteroids, dodge collisions, and survive as long as you can!
 
-<img src="/assets/images/screenshot.png" alt="Morpheus Gameplay Screenshot" width="600">
+<img src="./assets/images/screenshot.png" alt="Morpheus Gameplay Screenshot" width="600">
 
 ## About
 
