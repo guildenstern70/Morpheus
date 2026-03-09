@@ -25,6 +25,9 @@ public:
 
     void render(SDL_Renderer* renderer, bool showThrust) const;
 
+    // Static method to render a ship icon at a specific position
+    static void renderIcon(SDL_Renderer* renderer, float x, float y, float scale);
+
     float getX() const;
     float getY() const;
     float getOrientation() const;

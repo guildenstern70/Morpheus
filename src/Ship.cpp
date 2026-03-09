@@ -96,6 +96,27 @@ void Ship::render(SDL_Renderer* renderer, bool showThrust) const {
     }
 }
 
+void Ship::renderIcon(SDL_Renderer* renderer, float x, float y, float scale) {
+    // Ship points in local coordinates (upward-pointing triangle)
+    const std::array<SDL_FPoint, 5> localPoints = {
+        {{0.0f, -10.4f}, {-6.4f, 8.0f}, {0.0f, 3.2f}, {6.4f, 8.0f}, {0.0f, -10.4f}}
+    };
+
+    std::array<SDL_FPoint, 5> transformedPoints{};
+    for (size_t i = 0; i < localPoints.size(); ++i) {
+        transformedPoints[i].x = x + localPoints[i].x * scale;
+        transformedPoints[i].y = y + localPoints[i].y * scale;
+    }
+
+    for (size_t i = 0; i + 1 < transformedPoints.size(); ++i) {
+        SDL_RenderLine(renderer,
+                      transformedPoints[i].x,
+                      transformedPoints[i].y,
+                      transformedPoints[i + 1].x,
+                      transformedPoints[i + 1].y);
+    }
+}
+
 void Ship::normalizeOrientation() {
     m_orientationDegrees = std::fmod(m_orientationDegrees, 360.0f);
     if (m_orientationDegrees < 0.0f) {

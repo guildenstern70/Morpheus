@@ -149,6 +149,16 @@ bool Game::checkShipAsteroidCollision(const Ship& ship, const Asteroid& asteroid
     );
 }
 
+bool Game::isPositionSafe(float x, float y, float safetyRadius, const std::vector<Asteroid>& asteroids) const {
+    for (const auto& asteroid : asteroids) {
+        if (checkCircleCollision(x, y, safetyRadius,
+                                asteroid.getX(), asteroid.getY(), asteroid.getRadius())) {
+            return false;  // Position is not safe
+        }
+    }
+    return true;  // Position is safe
+}
+
 std::vector<Asteroid> Game::createFragments(const Asteroid& parent) const {
     std::vector<Asteroid> fragments;
 

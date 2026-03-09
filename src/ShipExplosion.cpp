@@ -14,7 +14,7 @@ namespace {
 constexpr float kPi = 3.14159265358979323846f;
 }
 
-ShipExplosion::ShipExplosion(float shipX, float shipY, float shipOrientation)
+ShipExplosion::ShipExplosion(const float shipX, const float shipY, const float shipOrientation)
     : m_elapsedTime(0.0f) {
     createDebris(shipX, shipY, shipOrientation);
 }

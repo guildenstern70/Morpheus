@@ -32,6 +32,7 @@ public:
     // Collision detection
     bool checkCircleCollision(float x1, float y1, float r1, float x2, float y2, float r2) const;
     bool checkShipAsteroidCollision(const Ship& ship, const Asteroid& asteroid) const;
+    bool isPositionSafe(float x, float y, float safetyRadius, const std::vector<Asteroid>& asteroids) const;
     std::vector<Asteroid> createFragments(const Asteroid& parent) const;
 
     // Collision handling
