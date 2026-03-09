@@ -1,6 +1,20 @@
 # Morpheus
 
-A cross-platform 2D game built with SDL2 and C++.
+A modern implementation of the classic **Atari Asteroids** arcade game, built with C++ and SDL3. Destroy asteroids, dodge collisions, and survive as long as you can!
+
+## About
+
+Morpheus is a faithful recreation of the legendary 1979 Atari Asteroids arcade game. Navigate your spaceship through a dangerous asteroid field, break down larger asteroids into smaller pieces, and accumulate points without losing all your lives.
+
+## Game Features
+
+- **Classic Arcade Gameplay** - Rotate, thrust, and shoot to destroy asteroids
+- **Progressive Difficulty** - More asteroids spawn as you clear the screen
+- **Score Tracking** - Track your current score and high score
+- **Lives System** - Start with 3 lives; lose one when colliding with an asteroid
+- **Ship Explosion Animation** - Dramatic 2+ second explosion animation when destroyed
+- **Safe Spawn System** - Intelligent respawn logic prevents unfair instant collisions
+- **Pixel-Perfect Collision Detection** - Collisions occur when objects actually touch
 
 ## Prerequisites
 
@@ -33,6 +47,91 @@ cmake --build .
 
 ## Controls
 
+- **LEFT ARROW** - Rotate ship counterclockwise
+- **RIGHT ARROW** - Rotate ship clockwise
+- **UP ARROW** - Thrust (accelerate forward)
+- **SPACE** - Shoot (coming soon)
 - **ESC** - Exit game
+
+## Gameplay
+
+### Objective
+Destroy all asteroids on the screen to advance to the next level. Each destroyed asteroid breaks into smaller pieces (except the smallest ones, which are destroyed completely).
+
+### Scoring
+- Small asteroid: 100 points
+- Medium asteroid: 50 points
+- Large asteroid: 20 points
+
+### Game Over
+The game ends when you lose all 3 lives. Your final score is compared to the high score.
+
+### Special Features
+- **Safe Spawn Zones** - When you respawn after losing a life, the game waits for the center of the screen to be clear of asteroids
+- **Initial Deployment** - At game start, asteroids are guaranteed to not overlap, ensuring a fair beginning
+- **Respawn Messages** - Visual feedback while waiting for safe spawn positions:
+  - "WAIT FOR SAFE DEPLOYMENT" - When waiting for the initial safe zone
+  - "WAITING TO SAFELY RESPAWN" - When waiting after losing a life
+
+## Building from Source
+
+### Requirements
+- C++17 or later
+- CMake 3.10 or later
+- SDL3
+
+### Step-by-Step
+
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd Morpheus
+```
+
+2. Create and navigate to build directory:
+```bash
+mkdir -p build
+cd build
+```
+
+3. Configure and build:
+```bash
+cmake ..
+cmake --build .
+```
+
+4. Run the game:
+```bash
+./Morpheus
+```
+
+## Project Structure
+
+```
+Morpheus/
+├── src/              # Source files
+│   ├── main.cpp      # Game loop and main logic
+│   ├── Game.cpp      # Game state and collision logic
+│   ├── Ship.cpp      # Ship implementation
+│   ├── Asteroid.cpp  # Asteroid implementation
+│   ├── ShipExplosion.cpp
+│   └── TextRenderer.cpp
+├── include/          # Header files
+├── assets/           # Game assets (sprites, sounds, fonts)
+├── CMakeLists.txt    # Build configuration
+└── README.md         # This file
+```
+
+## License
+
+This project is licensed under the MIT License. See the LICENSE file for details.
+
+## Copyright
+
+Project Morpheus © 2026 Alessio Saltarin
+
+---
+
+*Morpheus is inspired by the classic Atari Asteroids arcade game, one of the most iconic games in video game history.*
 
 
