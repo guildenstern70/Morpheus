@@ -13,8 +13,7 @@ file(GLOB_RECURSE SOURCES "src/*.cpp")
 file(GLOB_RECURSE HEADERS "include/*.h")
 
 # Create executable
-add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS}
-        src/Game.cpp)
+add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 
 # Include directories
 target_include_directories(${PROJECT_NAME} PRIVATE 

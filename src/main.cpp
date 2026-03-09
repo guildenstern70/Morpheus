@@ -10,13 +10,14 @@
 #include <cmath>
 #include <iostream>
 #include <vector>
+#include <memory>
 
 #include "colors.h"
 #include "config.h"
 #include "Asteroid.h"
 #include "Game.h"
 #include "Ship.h"
-
+#include "ShipExplosion.h"
 
 void mainLoop(SDL_Window* window,
               SDL_Renderer* renderer) {
@@ -32,6 +33,10 @@ void mainLoop(SDL_Window* window,
 
     std::vector<Asteroid> asteroids;
     game.populateAsteroids(asteroids, INITIAL_ASTEROID_COUNT);
+
+    // Explosion state
+    std::unique_ptr<ShipExplosion> shipExplosion = nullptr;
+    bool shipDestroyed = false;
 
     constexpr Colors::Color BACKGROUND_COLOR = Colors::BLACK;
     constexpr Colors::Color SHIP_COLOR = Colors::SILVER;
@@ -73,71 +78,45 @@ void mainLoop(SDL_Window* window,
         const float deltaSeconds = static_cast<float>(currentTicks - previousTicks) / 1000.0f;
         previousTicks = currentTicks;
 
-        ship.update(turningLeft,
-                    turningRight,
-                    thrusting,
-                    deltaSeconds,
-                    SHIP_TURN_SPEED_DEG_PER_SEC,
-                    SHIP_THRUST_ACCELERATION,
-                    SCREEN_WIDTH,
-                    SCREEN_HEIGHT);
+        // Update explosion animation if active
+        if (shipExplosion) {
+            shipExplosion->update(deltaSeconds);
+            if (shipExplosion->isFinished()) {
+                // Explosion finished, reset ship
+                ship = Ship(SHIP_CENTER_X, SHIP_CENTER_Y);
+                shipExplosion = nullptr;
+                shipDestroyed = false;
+            }
+        }
+
+        // Only update ship if it's not destroyed
+        if (!shipDestroyed) {
+            ship.update(turningLeft,
+                        turningRight,
+                        thrusting,
+                        deltaSeconds,
+                        SHIP_TURN_SPEED_DEG_PER_SEC,
+                        SHIP_THRUST_ACCELERATION,
+                        SCREEN_WIDTH,
+                        SCREEN_HEIGHT);
+        }
 
         // Update asteroids
         for (auto& asteroid : asteroids) {
             asteroid.update(deltaSeconds, SCREEN_WIDTH, SCREEN_HEIGHT);
         }
 
-        // Collision detection - ship vs asteroids
-        for (size_t i = 0; i < asteroids.size(); ++i) {
-            if (game.checkShipAsteroidCollision(ship, asteroids[i])) {
-                game.loseShip();
-                // Create fragments from destroyed asteroid
-                auto fragments = game.createFragments(asteroids[i]);
-                asteroids.erase(asteroids.begin() + i);
-                asteroids.insert(asteroids.end(), fragments.begin(), fragments.end());
-                // Reset ship position
-                ship = Ship(SHIP_CENTER_X, SHIP_CENTER_Y);
-                break;  // Only one collision per frame
+        // Collision detection - ship vs asteroids (only if ship is not already destroyed)
+        if (!shipDestroyed) {
+            if (game.handleShipAsteroidCollisions(ship, asteroids, SHIP_CENTER_X, SHIP_CENTER_Y)) {
+                // Collision occurred - create explosion
+                shipExplosion = std::make_unique<ShipExplosion>(ship.getX(), ship.getY(), ship.getOrientation());
+                shipDestroyed = true;
             }
         }
 
         // Collision detection - asteroid vs asteroid (elastic bounce)
-        for (size_t i = 0; i < asteroids.size(); ++i) {
-            for (size_t j = i + 1; j < asteroids.size(); ++j) {
-                if (game.checkCircleCollision(
-                    asteroids[i].getX(), asteroids[i].getY(), asteroids[i].getRadius(),
-                    asteroids[j].getX(), asteroids[j].getY(), asteroids[j].getRadius())) {
-
-                    // Compute collision normal (unit vector from i to j)
-                    const float dx = asteroids[j].getX() - asteroids[i].getX();
-                    const float dy = asteroids[j].getY() - asteroids[i].getY();
-                    const float dist = std::sqrt(dx * dx + dy * dy);
-                    if (dist == 0.0f) break;  // coincident centres — skip
-                    const float nx = dx / dist;
-                    const float ny = dy / dist;
-
-                    // Project velocities onto the collision normal
-                    const float v1n = asteroids[i].getVelocityX() * nx + asteroids[i].getVelocityY() * ny;
-                    const float v2n = asteroids[j].getVelocityX() * nx + asteroids[j].getVelocityY() * ny;
-
-                    // Only resolve if asteroids are moving toward each other
-                    if (v1n - v2n <= 0.0f) break;
-
-                    // Equal-mass elastic collision: swap normal components
-                    const float dvx = (v2n - v1n) * nx;
-                    const float dvy = (v2n - v1n) * ny;
-
-                    asteroids[i].setVelocity(
-                        asteroids[i].getVelocityX() + dvx,
-                        asteroids[i].getVelocityY() + dvy);
-                    asteroids[j].setVelocity(
-                        asteroids[j].getVelocityX() - dvx,
-                        asteroids[j].getVelocityY() - dvy);
-
-                    break;
-                }
-            }
-        }
+        game.handleAsteroidAsteroidCollisions(asteroids);
 
         SDL_SetRenderDrawColor(renderer,
             BACKGROUND_COLOR.r,
@@ -146,12 +125,17 @@ void mainLoop(SDL_Window* window,
             BACKGROUND_COLOR.a);
         SDL_RenderClear(renderer);
 
-        SDL_SetRenderDrawColor(renderer,
-            SHIP_COLOR.r,
-            SHIP_COLOR.g,
-            SHIP_COLOR.b,
-            SHIP_COLOR.a);
-        ship.render(renderer, thrusting);
+        // Render ship or explosion
+        if (shipExplosion) {
+            shipExplosion->render(renderer, SHIP_COLOR);
+        } else {
+            SDL_SetRenderDrawColor(renderer,
+                SHIP_COLOR.r,
+                SHIP_COLOR.g,
+                SHIP_COLOR.b,
+                SHIP_COLOR.a);
+            ship.render(renderer, thrusting);
+        }
 
         for (auto& asteroid : asteroids) {
             asteroid.render(renderer, Colors::GRAY);

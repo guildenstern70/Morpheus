@@ -131,3 +131,8 @@ float Ship::getX() const {
 float Ship::getY() const {
     return m_y;
 }
+
+float Ship::getOrientation() const {
+    return m_orientationDegrees;
+}
+

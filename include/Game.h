@@ -34,6 +34,10 @@ public:
     bool checkShipAsteroidCollision(const Ship& ship, const Asteroid& asteroid) const;
     std::vector<Asteroid> createFragments(const Asteroid& parent) const;
 
+    // Collision handling
+    bool handleShipAsteroidCollisions(Ship& ship, std::vector<Asteroid>& asteroids, float shipResetX, float shipResetY);
+    void handleAsteroidAsteroidCollisions(std::vector<Asteroid>& asteroids);
+
 private:
     int m_score;
     int m_shipsRemaining;

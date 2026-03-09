@@ -27,6 +27,7 @@ public:
 
     float getX() const;
     float getY() const;
+    float getOrientation() const;
 
 private:
     float m_x;
