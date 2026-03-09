@@ -2,6 +2,8 @@
 
 A modern implementation of the classic **Atari Asteroids** arcade game, built with C++ and SDL3. Destroy asteroids, dodge collisions, and survive as long as you can!
 
+<img src="/assets/images/screenshot.png" alt="Morpheus Gameplay Screenshot" width="600">
+
 ## About
 
 Morpheus is a faithful recreation of the legendary 1979 Atari Asteroids arcade game. Navigate your spaceship through a dangerous asteroid field, break down larger asteroids into smaller pieces, and accumulate points without losing all your lives.
