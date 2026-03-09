@@ -80,7 +80,10 @@ void Game::populateAsteroids(std::vector<Asteroid>& asteroids, int count) {
             y = static_cast<float>(rand() % 600);
 
             // Random size
-            const Asteroid::Size sizes[] = {Asteroid::Size::SMALL, Asteroid::Size::MEDIUM, Asteroid::Size::LARGE};
+            constexpr Asteroid::Size sizes[] =
+                { Asteroid::Size::SMALL,
+                  Asteroid::Size::MEDIUM,
+                  Asteroid::Size::LARGE };
             size = sizes[rand() % 3];
 
             // Get radius for this size
@@ -127,18 +130,27 @@ void Game::populateAsteroids(std::vector<Asteroid>& asteroids, int count) {
 
 
         // Random shape
-        const Asteroid::Shape shapes[] = {Asteroid::Shape::SHAPE_A, Asteroid::Shape::SHAPE_B};
+        constexpr Asteroid::Shape shapes[] = {Asteroid::Shape::SHAPE_A, Asteroid::Shape::SHAPE_B};
         const Asteroid::Shape shape = shapes[rand() % 2];
 
         asteroids.emplace_back(x, y, velocityX, velocityY, size, shape);
     }
 }
 
-bool Game::checkCircleCollision(float x1, float y1, float r1, float x2, float y2, float r2) const {
+bool Game::checkCircleCollision(const float x1,
+                                const float y1,
+                                const float r1,
+                                const float x2,
+                                const float y2,
+                                const float r2) const {
     const float dx = x2 - x1;
     const float dy = y2 - y1;
     const float distanceSquared = dx * dx + dy * dy;
-    const float radiusSum = r1 + r2;
+    // Use 0.85 factor to reduce effective collision radius
+    // This better matches the irregular polygon shapes
+    const float effectiveR1 = r1 * 0.85f;
+    const float effectiveR2 = r2 * 0.85f;
+    const float radiusSum = effectiveR1 + effectiveR2;
     return distanceSquared <= (radiusSum * radiusSum);
 }
 
@@ -149,7 +161,10 @@ bool Game::checkShipAsteroidCollision(const Ship& ship, const Asteroid& asteroid
     );
 }
 
-bool Game::isPositionSafe(float x, float y, float safetyRadius, const std::vector<Asteroid>& asteroids) const {
+bool Game::isPositionSafe(const float x,
+                          const float y,
+                          const float safetyRadius,
+                          const std::vector<Asteroid>& asteroids) const {
     for (const auto& asteroid : asteroids) {
         if (checkCircleCollision(x, y, safetyRadius,
                                 asteroid.getX(), asteroid.getY(), asteroid.getRadius())) {
@@ -159,7 +174,7 @@ bool Game::isPositionSafe(float x, float y, float safetyRadius, const std::vecto
     return true;  // Position is safe
 }
 
-std::vector<Asteroid> Game::createFragments(const Asteroid& parent) const {
+std::vector<Asteroid> Game::createFragments(const Asteroid& parent) {
     std::vector<Asteroid> fragments;
 
     Asteroid::Size fragmentSize;
@@ -222,7 +237,7 @@ bool Game::handleShipAsteroidCollisions(Ship& ship, std::vector<Asteroid>& aster
     return false;  // No collision
 }
 
-void Game::handleAsteroidAsteroidCollisions(std::vector<Asteroid>& asteroids) {
+void Game::handleAsteroidAsteroidCollisions(std::vector<Asteroid>& asteroids) const {
     for (size_t i = 0; i < asteroids.size(); ++i) {
         for (size_t j = i + 1; j < asteroids.size(); ++j) {
             if (checkCircleCollision(

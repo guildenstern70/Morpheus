@@ -39,6 +39,8 @@ void mainLoop(SDL_Window* window,
     std::unique_ptr<ShipExplosion> shipExplosion = nullptr;
     bool shipDestroyed = false;
     bool waitingToRespawn = false;
+    float respawnWaitingMessageBlinkTimer = 0.0f;
+    float gameStartWaitingMessageBlinkTimer = 0.0f;
 
     // Game start safety - check if initial spawn position is safe
     constexpr float SPAWN_SAFETY_RADIUS = 50.0f;
@@ -114,6 +116,10 @@ void mainLoop(SDL_Window* window,
             if (game.isPositionSafe(SHIP_CENTER_X, SHIP_CENTER_Y, SPAWN_SAFETY_RADIUS, asteroids)) {
                 ship = Ship(SHIP_CENTER_X, SHIP_CENTER_Y);
                 waitingToRespawn = false;
+                respawnWaitingMessageBlinkTimer = 0.0f;  // Reset timer when respawning
+            } else {
+                // Update blink timer
+                respawnWaitingMessageBlinkTimer += deltaSeconds;
             }
         }
 
@@ -121,6 +127,10 @@ void mainLoop(SDL_Window* window,
         if (!gameStarted) {
             if (game.isPositionSafe(SHIP_CENTER_X, SHIP_CENTER_Y, SPAWN_SAFETY_RADIUS, asteroids)) {
                 gameStarted = true;
+                gameStartWaitingMessageBlinkTimer = 0.0f;  // Reset timer when game starts
+            } else {
+                // Update blink timer while waiting
+                gameStartWaitingMessageBlinkTimer += deltaSeconds;
             }
         }
 
@@ -228,6 +238,36 @@ void mainLoop(SDL_Window* window,
 
         for (auto& asteroid : asteroids) {
             asteroid.render(renderer, Colors::GRAY);
+        }
+
+        // Render blinking "WAITING TO SAFELY RESPAWN" message if applicable
+        if (waitingToRespawn) {
+            constexpr float BLINK_PERIOD = 0.8f;  // Blink cycle duration (0.4s visible, 0.4s hidden)
+            constexpr float MESSAGE_Y = SCREEN_HEIGHT - 50.0f;
+            constexpr float MESSAGE_SCALE = 1.2f;
+
+            // Toggle visibility every half period
+            if (std::fmod(respawnWaitingMessageBlinkTimer, BLINK_PERIOD) < BLINK_PERIOD / 2.0f) {
+                TextRenderer::renderText(renderer, "WAITING TO SAFELY RESPAWN",
+                                        SCREEN_WIDTH / 2.0f, MESSAGE_Y,
+                                        MESSAGE_SCALE, Colors::SILVER,
+                                        TextRenderer::Alignment::CENTER);
+            }
+        }
+
+        // Render blinking "WAIT FOR SAFE DEPLOYMENT" message when game is waiting to start
+        if (!gameStarted) {
+            constexpr float BLINK_PERIOD = 0.8f;  // Blink cycle duration (0.4s visible, 0.4s hidden)
+            constexpr float MESSAGE_Y = SCREEN_HEIGHT - 50.0f;
+            constexpr float MESSAGE_SCALE = 1.2f;
+
+            // Toggle visibility every half period
+            if (std::fmod(gameStartWaitingMessageBlinkTimer, BLINK_PERIOD) < BLINK_PERIOD / 2.0f) {
+                TextRenderer::renderText(renderer, "WAIT FOR SAFE DEPLOYMENT",
+                                        SCREEN_WIDTH / 2.0f, MESSAGE_Y,
+                                        MESSAGE_SCALE, Colors::SILVER,
+                                        TextRenderer::Alignment::CENTER);
+            }
         }
 
         SDL_RenderPresent(renderer);
