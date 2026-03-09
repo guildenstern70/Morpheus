@@ -16,16 +16,21 @@ public:
 
     void update(bool turningLeft,
                 bool turningRight,
+                bool thrusting,
                 float deltaSeconds,
-                float turnSpeedDegPerSec);
+                float turnSpeedDegPerSec,
+                float thrustAcceleration);
 
-    void render(SDL_Renderer* renderer) const;
+    void render(SDL_Renderer* renderer, bool showThrust) const;
 
 private:
-    float m_centerX;
-    float m_centerY;
+    float m_x;
+    float m_y;
+    float m_velocityX;
+    float m_velocityY;
     float m_orientationDegrees;
 
     void normalizeOrientation();
+    void updatePosition(float deltaSeconds);
 };
 

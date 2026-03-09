@@ -16,15 +16,19 @@ constexpr float kPi = 3.14159265358979323846f;
 }
 
 Ship::Ship(float centerX, float centerY)
-    : m_centerX(centerX),
-      m_centerY(centerY),
+    : m_x(centerX),
+      m_y(centerY),
+      m_velocityX(0.0f),
+      m_velocityY(0.0f),
       m_orientationDegrees(0.0f) {
 }
 
-void Ship::update(bool turningLeft,
-                  bool turningRight,
-                  float deltaSeconds,
-                  float turnSpeedDegPerSec) {
+void Ship::update(const bool turningLeft,
+                  const bool turningRight,
+                  const bool thrusting,
+                  const float deltaSeconds,
+                  const float turnSpeedDegPerSec,
+                  const float thrustAcceleration) {
     if (turningRight) {
         m_orientationDegrees += turnSpeedDegPerSec * deltaSeconds;
     }
@@ -33,10 +37,20 @@ void Ship::update(bool turningLeft,
     }
 
     normalizeOrientation();
+
+    if (thrusting) {
+        const float angleRadians = m_orientationDegrees * (kPi / 180.0f);
+        const float thrustX = std::sin(angleRadians) * thrustAcceleration * deltaSeconds;
+        const float thrustY = -std::cos(angleRadians) * thrustAcceleration * deltaSeconds;
+        m_velocityX += thrustX;
+        m_velocityY += thrustY;
+    }
+
+    updatePosition(deltaSeconds);
 }
 
-void Ship::render(SDL_Renderer* renderer) const {
-    std::array<SDL_FPoint, 5> localPoints = {{{0.0f, -26.0f}, {-16.0f, 20.0f}, {0.0f, 8.0f}, {16.0f, 20.0f}, {0.0f, -26.0f}}};
+void Ship::render(SDL_Renderer* renderer, bool showThrust) const {
+    const std::array<SDL_FPoint, 5> localPoints = {{{0.0f, -10.4f}, {-6.4f, 8.0f}, {0.0f, 3.2f}, {6.4f, 8.0f}, {0.0f, -10.4f}}};
 
     const float angleRadians = m_orientationDegrees * (kPi / 180.0f);
     const float cosA = std::cos(angleRadians);
@@ -46,8 +60,8 @@ void Ship::render(SDL_Renderer* renderer) const {
     for (size_t i = 0; i < localPoints.size(); ++i) {
         const float x = localPoints[i].x;
         const float y = localPoints[i].y;
-        transformedPoints[i].x = m_centerX + (x * cosA - y * sinA);
-        transformedPoints[i].y = m_centerY + (x * sinA + y * cosA);
+        transformedPoints[i].x = m_x + (x * cosA - y * sinA);
+        transformedPoints[i].y = m_y + (x * sinA + y * cosA);
     }
 
     for (size_t i = 0; i + 1 < transformedPoints.size(); ++i) {
@@ -57,6 +71,26 @@ void Ship::render(SDL_Renderer* renderer) const {
                        transformedPoints[i + 1].x,
                        transformedPoints[i + 1].y);
     }
+
+    if (showThrust) {
+        const std::array<SDL_FPoint, 4> thrustPoints = {{{-3.2f, 8.0f}, {0.0f, 12.8f}, {3.2f, 8.0f}, {-3.2f, 8.0f}}};
+
+        std::array<SDL_FPoint, 4> transformedThrustPoints{};
+        for (size_t i = 0; i < thrustPoints.size(); ++i) {
+            const float x = thrustPoints[i].x;
+            const float y = thrustPoints[i].y;
+            transformedThrustPoints[i].x = m_x + (x * cosA - y * sinA);
+            transformedThrustPoints[i].y = m_y + (x * sinA + y * cosA);
+        }
+
+        for (size_t i = 0; i + 1 < transformedThrustPoints.size(); ++i) {
+            SDL_RenderLine(renderer,
+                           transformedThrustPoints[i].x,
+                           transformedThrustPoints[i].y,
+                           transformedThrustPoints[i + 1].x,
+                           transformedThrustPoints[i + 1].y);
+        }
+    }
 }
 
 void Ship::normalizeOrientation() {
@@ -64,5 +98,10 @@ void Ship::normalizeOrientation() {
     if (m_orientationDegrees < 0.0f) {
         m_orientationDegrees += 360.0f;
     }
+}
+
+void Ship::updatePosition(float deltaSeconds) {
+    m_x += m_velocityX * deltaSeconds;
+    m_y += m_velocityY * deltaSeconds;
 }
 

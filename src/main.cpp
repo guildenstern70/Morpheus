@@ -9,6 +9,7 @@
 #include <SDL3/SDL.h>
 #include <iostream>
 
+#include "colors.h"
 #include "config.h"
 #include "Ship.h"
 
@@ -19,9 +20,13 @@ void mainLoop(SDL_Window* window,
     bool running = true;
     bool turningLeft = false;
     bool turningRight = false;
+    bool thrusting = false;
     Ship ship(SHIP_CENTER_X, SHIP_CENTER_Y);
     Uint64 previousTicks = SDL_GetTicks();
     SDL_Event event;
+
+    constexpr Colors::Color BACKGROUND_COLOR = Colors::BLACK;
+    constexpr Colors::Color SHIP_COLOR = Colors::SILVER;
 
     while (running) {
         const Uint64 frameStartTicks = SDL_GetTicks();
@@ -38,6 +43,8 @@ void mainLoop(SDL_Window* window,
                         turningLeft = true;
                     } else if (event.key.key == SDLK_RIGHT) {
                         turningRight = true;
+                    } else if (event.key.key == SDLK_UP) {
+                        thrusting = true;
                     }
                     break;
                 case SDL_EVENT_KEY_UP:
@@ -45,6 +52,8 @@ void mainLoop(SDL_Window* window,
                         turningLeft = false;
                     } else if (event.key.key == SDLK_RIGHT) {
                         turningRight = false;
+                    } else if (event.key.key == SDLK_UP) {
+                        thrusting = false;
                     }
                     break;
                 default:
@@ -58,19 +67,29 @@ void mainLoop(SDL_Window* window,
 
         ship.update(turningLeft,
                     turningRight,
+                    thrusting,
                     deltaSeconds,
-                    SHIP_TURN_SPEED_DEG_PER_SEC);
+                    SHIP_TURN_SPEED_DEG_PER_SEC,
+                    SHIP_THRUST_ACCELERATION);
 
-        SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
+        SDL_SetRenderDrawColor(renderer,
+            BACKGROUND_COLOR.r,
+            BACKGROUND_COLOR.g,
+            BACKGROUND_COLOR.b,
+            BACKGROUND_COLOR.a);
         SDL_RenderClear(renderer);
 
-        SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
-        ship.render(renderer);
+        SDL_SetRenderDrawColor(renderer,
+            SHIP_COLOR.r,
+            SHIP_COLOR.g,
+            SHIP_COLOR.b,
+            SHIP_COLOR.a);
+        ship.render(renderer, thrusting);
 
         SDL_RenderPresent(renderer);
 
         const Uint64 frameEndTicks = SDL_GetTicks();
-        const float frameElapsedMs = static_cast<float>(frameEndTicks - frameStartTicks);
+        const auto frameElapsedMs = static_cast<float>(frameEndTicks - frameStartTicks);
         if (frameElapsedMs < TARGET_FRAME_TIME_MS) {
             SDL_Delay(static_cast<Uint32>(TARGET_FRAME_TIME_MS - frameElapsedMs));
         }
@@ -100,7 +119,7 @@ int main() {
         return 1;
     }
 
-    SDL_Renderer* renderer = SDL_CreateRenderer(window, NULL);
+    SDL_Renderer* renderer = SDL_CreateRenderer(window, nullptr);
     if (!renderer) {
         std::cerr << "Renderer could not be created! SDL_Error: " << SDL_GetError() << std::endl;
         SDL_DestroyWindow(window);
