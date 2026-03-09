@@ -8,9 +8,11 @@
 
 #include <SDL3/SDL.h>
 #include <iostream>
+#include <vector>
 
 #include "colors.h"
 #include "config.h"
+#include "Asteroid.h"
 #include "Game.h"
 #include "Ship.h"
 
@@ -26,6 +28,9 @@ void mainLoop(SDL_Window* window,
     Ship ship(SHIP_CENTER_X, SHIP_CENTER_Y);
     Uint64 previousTicks = SDL_GetTicks();
     SDL_Event event;
+
+    std::vector<Asteroid> asteroids;
+    game.populateAsteroids(asteroids, INITIAL_ASTEROID_COUNT);
 
     constexpr Colors::Color BACKGROUND_COLOR = Colors::BLACK;
     constexpr Colors::Color SHIP_COLOR = Colors::SILVER;
@@ -76,6 +81,51 @@ void mainLoop(SDL_Window* window,
                     SCREEN_WIDTH,
                     SCREEN_HEIGHT);
 
+        // Update asteroids
+        for (auto& asteroid : asteroids) {
+            asteroid.update(deltaSeconds, SCREEN_WIDTH, SCREEN_HEIGHT);
+        }
+
+        // Collision detection - ship vs asteroids
+        for (size_t i = 0; i < asteroids.size(); ++i) {
+            if (game.checkShipAsteroidCollision(ship, asteroids[i])) {
+                game.loseShip();
+                // Create fragments from destroyed asteroid
+                auto fragments = game.createFragments(asteroids[i]);
+                asteroids.erase(asteroids.begin() + i);
+                asteroids.insert(asteroids.end(), fragments.begin(), fragments.end());
+                // Reset ship position
+                ship = Ship(SHIP_CENTER_X, SHIP_CENTER_Y);
+                break;  // Only one collision per frame
+            }
+        }
+
+        // Collision detection - asteroid vs asteroid
+        for (size_t i = 0; i < asteroids.size(); ++i) {
+            for (size_t j = i + 1; j < asteroids.size(); ++j) {
+                if (game.checkCircleCollision(
+                    asteroids[i].getX(), asteroids[i].getY(), asteroids[i].getRadius(),
+                    asteroids[j].getX(), asteroids[j].getY(), asteroids[j].getRadius())) {
+
+                    // Create fragments from both asteroids
+                    auto fragments1 = game.createFragments(asteroids[i]);
+                    auto fragments2 = game.createFragments(asteroids[j]);
+
+                    // Remove colliding asteroids (remove larger index first)
+                    asteroids.erase(asteroids.begin() + j);
+                    asteroids.erase(asteroids.begin() + i);
+
+                    // Add fragments
+                    asteroids.insert(asteroids.end(), fragments1.begin(), fragments1.end());
+                    asteroids.insert(asteroids.end(), fragments2.begin(), fragments2.end());
+
+                    // Adjust loop indices after removal
+                    --i;
+                    break;
+                }
+            }
+        }
+
         SDL_SetRenderDrawColor(renderer,
             BACKGROUND_COLOR.r,
             BACKGROUND_COLOR.g,
@@ -89,6 +139,10 @@ void mainLoop(SDL_Window* window,
             SHIP_COLOR.b,
             SHIP_COLOR.a);
         ship.render(renderer, thrusting);
+
+        for (auto& asteroid : asteroids) {
+            asteroid.render(renderer, Colors::GRAY);
+        }
 
         SDL_RenderPresent(renderer);
 

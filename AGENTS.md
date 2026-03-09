@@ -8,13 +8,20 @@ Agent onboarding and working agreement for the `Morpheus` repository.
 - **Type**: C++ game prototype
 - **Style goal**: Atari Asteroids-like 2D gameplay
 - **Current gameplay state**:
-  - A wireframe green ship shaped like an `A`
-  - Ship starts centered on screen (`800x600`)
-  - Rotation controls:
-    - `Left Arrow`: counterclockwise
-    - `Right Arrow`: clockwise
-  - Rotation speed is delta-time scaled
-  - Main loop is capped to ~60 FPS
+  - A green wireframe ship shaped like an `A`, centered on screen
+  - Ship rotation with Left/Right arrow keys (180°/sec turning speed)
+  - Thrust with Up arrow, accelerating ship in facing direction (200 units/sec acceleration)
+  - Thrust flame visual at ship rear when accelerating
+  - Screen wraps toroidally (edges loop around like a sphere)
+  - 5 asteroids spawn randomly on screen with random velocities (2-6 units/sec)
+  - Asteroids rotate slowly at 20°/sec
+  - **Collision detection system**:
+    - Circle-based collision detection (ship radius: 10px, asteroid radius varies by size)
+    - Ship-asteroid collisions: ship loses a life and respawns at center, asteroid breaks into fragments
+    - Asteroid-asteroid collisions: both asteroids break into fragments
+    - Asteroid fragmentation: LARGE → 3 MEDIUM pieces, MEDIUM → 3 SMALL pieces, SMALL → destroyed
+    - Fragments inherit parent position and receive impulse-based velocity (40 units/sec spread at ±45°)
+  - Game state tracks score, high score, and ships remaining (default: 3)
 
 ## 2) Tech Stack
 
@@ -68,8 +75,9 @@ cmake --build .
 ## 6) Controls (Current)
 
 - `ESC`: Quit
-- `Left Arrow`: Turn left
-- `Right Arrow`: Turn right
+- `Left Arrow`: Turn left (counterclockwise)
+- `Right Arrow`: Turn right (clockwise)
+- `Up Arrow`: Apply thrust (accelerate in facing direction)
 
 ## 7) Source-of-Truth Notes
 
@@ -107,9 +115,12 @@ Then perform a quick run smoke test to ensure startup and input/render still wor
 
 ## 11) Near-Term Backlog Suggestions
 
-- Add ship thrust and velocity integration
-- Add asteroid spawning and movement
-- Add projectile shooting and collision detection
-- Add score/lives/game-over loop
-- Update `README.md` controls and SDL wording to match implementation
+- Add projectile shooting (space bar) with collision detection against asteroids
+- Add scoring system (points for destroying asteroids: large=20, medium=50, small=100)
+- Add score/lives UI rendering on screen using SDL text or simple graphics
+- Implement ship respawn invulnerability period (flashing effect for 2-3 seconds)
+- Implement game-over state when ships reach 0 with restart option
+- Add enemy UFO spawning with AI behavior and shooting
+- Add sound effects (thrust, laser, collision, explosion)
+- Implement difficulty scaling with progressive waves
 

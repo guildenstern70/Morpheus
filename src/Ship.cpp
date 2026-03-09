@@ -124,3 +124,10 @@ void Ship::wrapPosition(const float screenWidth, const float screenHeight) {
     }
 }
 
+float Ship::getX() const {
+    return m_x;
+}
+
+float Ship::getY() const {
+    return m_y;
+}
