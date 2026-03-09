@@ -99,6 +99,19 @@ float Asteroid::getRadius() const {
     return getRadiusForSize();
 }
 
+float Asteroid::getVelocityX() const {
+    return m_velocityX;
+}
+
+float Asteroid::getVelocityY() const {
+    return m_velocityY;
+}
+
+void Asteroid::setVelocity(const float velocityX, const float velocityY) {
+    m_velocityX = velocityX;
+    m_velocityY = velocityY;
+}
+
 void Asteroid::updatePosition(const float deltaSeconds) {
     m_x += m_velocityX * deltaSeconds;
     m_y += m_velocityY * deltaSeconds;

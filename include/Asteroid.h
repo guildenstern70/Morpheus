@@ -33,6 +33,9 @@ public:
     float getX() const;
     float getY() const;
     float getRadius() const;
+    float getVelocityX() const;
+    float getVelocityY() const;
+    void setVelocity(float velocityX, float velocityY);
 
 private:
     float m_x;

@@ -7,6 +7,7 @@
 //
 
 #include <SDL3/SDL.h>
+#include <cmath>
 #include <iostream>
 #include <vector>
 
@@ -100,27 +101,39 @@ void mainLoop(SDL_Window* window,
             }
         }
 
-        // Collision detection - asteroid vs asteroid
+        // Collision detection - asteroid vs asteroid (elastic bounce)
         for (size_t i = 0; i < asteroids.size(); ++i) {
             for (size_t j = i + 1; j < asteroids.size(); ++j) {
                 if (game.checkCircleCollision(
                     asteroids[i].getX(), asteroids[i].getY(), asteroids[i].getRadius(),
                     asteroids[j].getX(), asteroids[j].getY(), asteroids[j].getRadius())) {
 
-                    // Create fragments from both asteroids
-                    auto fragments1 = game.createFragments(asteroids[i]);
-                    auto fragments2 = game.createFragments(asteroids[j]);
+                    // Compute collision normal (unit vector from i to j)
+                    const float dx = asteroids[j].getX() - asteroids[i].getX();
+                    const float dy = asteroids[j].getY() - asteroids[i].getY();
+                    const float dist = std::sqrt(dx * dx + dy * dy);
+                    if (dist == 0.0f) break;  // coincident centres — skip
+                    const float nx = dx / dist;
+                    const float ny = dy / dist;
 
-                    // Remove colliding asteroids (remove larger index first)
-                    asteroids.erase(asteroids.begin() + j);
-                    asteroids.erase(asteroids.begin() + i);
+                    // Project velocities onto the collision normal
+                    const float v1n = asteroids[i].getVelocityX() * nx + asteroids[i].getVelocityY() * ny;
+                    const float v2n = asteroids[j].getVelocityX() * nx + asteroids[j].getVelocityY() * ny;
 
-                    // Add fragments
-                    asteroids.insert(asteroids.end(), fragments1.begin(), fragments1.end());
-                    asteroids.insert(asteroids.end(), fragments2.begin(), fragments2.end());
+                    // Only resolve if asteroids are moving toward each other
+                    if (v1n - v2n <= 0.0f) break;
 
-                    // Adjust loop indices after removal
-                    --i;
+                    // Equal-mass elastic collision: swap normal components
+                    const float dvx = (v2n - v1n) * nx;
+                    const float dvy = (v2n - v1n) * ny;
+
+                    asteroids[i].setVelocity(
+                        asteroids[i].getVelocityX() + dvx,
+                        asteroids[i].getVelocityY() + dvy);
+                    asteroids[j].setVelocity(
+                        asteroids[j].getVelocityX() - dvx,
+                        asteroids[j].getVelocityY() - dvy);
+
                     break;
                 }
             }
