@@ -79,6 +79,8 @@ cmake --build .
 
 - Keep changes minimal and targeted.
 - Prefer small, composable constants for gameplay tuning.
+- Use Object Oriented Programming (OOP) principles for future extensibility (e.g. `Ship` class).
+- Follow naming style as in Google C++ Style guide - https://google.github.io/styleguide/cppguide.html#General_Naming_Rules
 - Preserve the existing style in touched files.
 - Avoid introducing non-ASCII unless already present and needed.
 - Add comments only where logic is non-obvious.

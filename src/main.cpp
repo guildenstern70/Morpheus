@@ -7,19 +7,11 @@
 //
 
 #include <SDL3/SDL.h>
-#include <array>
-#include <cmath>
 #include <iostream>
 
-constexpr int SCREEN_WIDTH = 800;
-constexpr int SCREEN_HEIGHT = 600;
-auto WINDOW_TITLE = "Morpheus";
+#include "config.h"
+#include "Ship.h"
 
-constexpr float SHIP_TURN_SPEED_DEG_PER_SEC = 180.0f;
-constexpr float SHIP_CENTER_X = SCREEN_WIDTH / 2.0f;
-constexpr float SHIP_CENTER_Y = SCREEN_HEIGHT / 2.0f;
-constexpr int TARGET_FPS = 60;
-constexpr float TARGET_FRAME_TIME_MS = 1000.0f / static_cast<float>(TARGET_FPS);
 
 void mainLoop(SDL_Window* window,
               SDL_Renderer* renderer) {
@@ -27,7 +19,7 @@ void mainLoop(SDL_Window* window,
     bool running = true;
     bool turningLeft = false;
     bool turningRight = false;
-    float shipAngleDegrees = 0.0f;
+    Ship ship(SHIP_CENTER_X, SHIP_CENTER_Y);
     Uint64 previousTicks = SDL_GetTicks();
     SDL_Event event;
 
@@ -64,45 +56,16 @@ void mainLoop(SDL_Window* window,
         const float deltaSeconds = static_cast<float>(currentTicks - previousTicks) / 1000.0f;
         previousTicks = currentTicks;
 
-        if (turningRight) {
-            shipAngleDegrees += SHIP_TURN_SPEED_DEG_PER_SEC * deltaSeconds;
-        }
-        if (turningLeft) {
-            shipAngleDegrees -= SHIP_TURN_SPEED_DEG_PER_SEC * deltaSeconds;
-        }
-
-        shipAngleDegrees = std::fmod(shipAngleDegrees, 360.0f);
-        if (shipAngleDegrees < 0.0f) {
-            shipAngleDegrees += 360.0f;
-        }
+        ship.update(turningLeft,
+                    turningRight,
+                    deltaSeconds,
+                    SHIP_TURN_SPEED_DEG_PER_SEC);
 
         SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
         SDL_RenderClear(renderer);
 
         SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
-
-        // Local points form an "A"-like ship silhouette centered at origin.
-        std::array<SDL_FPoint, 5> localPoints = {{{0.0f, -26.0f}, {-16.0f, 20.0f}, {0.0f, 8.0f}, {16.0f, 20.0f}, {0.0f, -26.0f}}};
-
-        const float angleRadians = shipAngleDegrees * (static_cast<float>(M_PI) / 180.0f);
-        const float cosA = std::cos(angleRadians);
-        const float sinA = std::sin(angleRadians);
-
-        std::array<SDL_FPoint, 5> transformedPoints{};
-        for (size_t i = 0; i < localPoints.size(); ++i) {
-            const float x = localPoints[i].x;
-            const float y = localPoints[i].y;
-            transformedPoints[i].x = SHIP_CENTER_X + (x * cosA - y * sinA);
-            transformedPoints[i].y = SHIP_CENTER_Y + (x * sinA + y * cosA);
-        }
-
-        for (size_t i = 0; i + 1 < transformedPoints.size(); ++i) {
-            SDL_RenderLine(renderer,
-                           transformedPoints[i].x,
-                           transformedPoints[i].y,
-                           transformedPoints[i + 1].x,
-                           transformedPoints[i + 1].y);
-        }
+        ship.render(renderer);
 
         SDL_RenderPresent(renderer);
 
