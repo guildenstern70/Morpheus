@@ -15,10 +15,56 @@
 #include "colors.h"
 #include "config.h"
 #include "Asteroid.h"
+#include "Bolt.h"
 #include "Game.h"
 #include "Ship.h"
 #include "ShipExplosion.h"
 #include "TextRenderer.h"
+
+int renderHeader(SDL_Renderer *renderer, Game game, const Colors::Color SHIP_COLOR) {
+    constexpr float HEADER_SCALE = 2.5f;
+    constexpr float SUBHEADER_SCALE = 1.5f;
+    constexpr float TITLE_Y = 20.0f;
+    constexpr float INFO_Y = 45.0f;
+    constexpr float MARGIN = 20.0f;
+
+    // First line: Title centered
+    TextRenderer::renderText(renderer, "MORPHEUS",
+                             SCREEN_WIDTH / 2.0f, TITLE_Y,
+                             HEADER_SCALE, Colors::SILVER,
+                             TextRenderer::Alignment::CENTER);
+
+    // Second line: Score (left), Lives (center), High Score (right)
+    std::string scoreText = "SCORE " + std::to_string(game.getScore());
+    TextRenderer::renderText(renderer, scoreText,
+                             MARGIN, INFO_Y,
+                             SUBHEADER_SCALE, Colors::SILVER,
+                             TextRenderer::Alignment::LEFT);
+
+    // Lives: Draw ship icons centered
+    const int shipsRemaining = game.getShipsRemaining();
+    constexpr float SHIP_ICON_SCALE = 0.8f;
+    constexpr float SHIP_ICON_SPACING = 20.0f;
+    const float totalIconWidth = static_cast<float>(shipsRemaining) * SHIP_ICON_SPACING;
+    const float startX = (SCREEN_WIDTH / 2.0f) - (totalIconWidth / 2.0f) + (SHIP_ICON_SPACING / 2.0f);
+
+    SDL_SetRenderDrawColor(renderer,
+                           SHIP_COLOR.r,
+                           SHIP_COLOR.g,
+                           SHIP_COLOR.b,
+                           SHIP_COLOR.a);
+
+    for (int i = 0; i < shipsRemaining; ++i) {
+        Ship::renderIcon(renderer, startX + static_cast<float>(i) * SHIP_ICON_SPACING, INFO_Y + 10.0f, SHIP_ICON_SCALE);
+    }
+
+    std::string highScoreText = "HIGH " + std::to_string(game.getHighScore());
+    TextRenderer::renderText(renderer, highScoreText,
+                             SCREEN_WIDTH - MARGIN, INFO_Y,
+                             SUBHEADER_SCALE, Colors::SILVER,
+                             TextRenderer::Alignment::RIGHT);
+    return shipsRemaining;
+}
 
 void mainLoop(SDL_Window* window,
               SDL_Renderer* renderer) {
@@ -35,12 +81,22 @@ void mainLoop(SDL_Window* window,
     std::vector<Asteroid> asteroids;
     game.populateAsteroids(asteroids, INITIAL_ASTEROID_COUNT);
 
+    // Bolts
+    std::vector<Bolt> bolts;
+    constexpr float FIRE_COOLDOWN = 0.25f;  // Quarter second between shots
+    float timeSinceLastFire = FIRE_COOLDOWN;  // Start ready to fire
+
     // Explosion state
     std::unique_ptr<ShipExplosion> shipExplosion = nullptr;
     bool shipDestroyed = false;
     bool waitingToRespawn = false;
     float respawnWaitingMessageBlinkTimer = 0.0f;
     float gameStartWaitingMessageBlinkTimer = 0.0f;
+
+    // Waiting timers for asteroid regeneration (3 seconds before regenerating)
+    constexpr float WAITING_REGENERATE_THRESHOLD = 3.0f;
+    float respawnWaitingTime = 0.0f;  // Accumulated waiting time for respawn
+    float gameStartWaitingTime = 0.0f;  // Accumulated waiting time for game start
 
     // Game start safety - check if initial spawn position is safe
     constexpr float SPAWN_SAFETY_RADIUS = 50.0f;
@@ -51,6 +107,9 @@ void mainLoop(SDL_Window* window,
 
     while (running) {
         const Uint64 frameStartTicks = SDL_GetTicks();
+
+        // Check if game is over (needed for event handling)
+        const bool gameOver = (game.getShipsRemaining() == 0 && !shipExplosion);
 
         while (SDL_PollEvent(&event)) {
             switch (event.type) {
@@ -66,6 +125,20 @@ void mainLoop(SDL_Window* window,
                         turningRight = true;
                     } else if (event.key.key == SDLK_UP) {
                         thrusting = true;
+                    } else if (event.key.key == SDLK_SPACE) {
+                        // Fire bolt if game started, not destroyed, not waiting, and cooldown ready
+                        if (gameStarted && !shipDestroyed && !waitingToRespawn && !gameOver && timeSinceLastFire >= FIRE_COOLDOWN) {
+                            // Calculate bolt starting position at ship's nose
+                            // Ship's forward direction: sin(angle) for X, -cos(angle) for Y
+                            const float shipAngleRad = ship.getOrientation() * (3.14159265358979323846f / 180.0f);
+                            constexpr float SHIP_NOSE_OFFSET = 12.0f;  // Distance from center to nose
+                            const float boltStartX = ship.getX() + std::sin(shipAngleRad) * SHIP_NOSE_OFFSET;
+                            const float boltStartY = ship.getY() + (-std::cos(shipAngleRad)) * SHIP_NOSE_OFFSET;
+
+                            bolts.emplace_back(boltStartX, boltStartY, ship.getOrientation(),
+                                             ship.getVelocityX(), ship.getVelocityY());
+                            timeSinceLastFire = 0.0f;
+                        }
                     }
                     break;
                 case SDL_EVENT_KEY_UP:
@@ -85,6 +158,9 @@ void mainLoop(SDL_Window* window,
         const Uint64 currentTicks = SDL_GetTicks();
         const float deltaSeconds = static_cast<float>(currentTicks - previousTicks) / 1000.0f;
         previousTicks = currentTicks;
+
+        // Update fire cooldown timer
+        timeSinceLastFire += deltaSeconds;
 
         // Update explosion animation if active
         if (shipExplosion) {
@@ -117,9 +193,18 @@ void mainLoop(SDL_Window* window,
                 ship = Ship(SHIP_CENTER_X, SHIP_CENTER_Y);
                 waitingToRespawn = false;
                 respawnWaitingMessageBlinkTimer = 0.0f;  // Reset timer when respawning
+                respawnWaitingTime = 0.0f;  // Reset waiting time counter
             } else {
                 // Update blink timer
                 respawnWaitingMessageBlinkTimer += deltaSeconds;
+                // Accumulate waiting time
+                respawnWaitingTime += deltaSeconds;
+
+                // If we've been waiting for 3+ seconds, regenerate asteroids
+                if (respawnWaitingTime >= WAITING_REGENERATE_THRESHOLD) {
+                    game.populateAsteroids(asteroids, INITIAL_ASTEROID_COUNT);
+                    respawnWaitingTime = 0.0f;  // Reset counter to try again
+                }
             }
         }
 
@@ -128,14 +213,20 @@ void mainLoop(SDL_Window* window,
             if (game.isPositionSafe(SHIP_CENTER_X, SHIP_CENTER_Y, SPAWN_SAFETY_RADIUS, asteroids)) {
                 gameStarted = true;
                 gameStartWaitingMessageBlinkTimer = 0.0f;  // Reset timer when game starts
+                gameStartWaitingTime = 0.0f;  // Reset waiting time counter
             } else {
                 // Update blink timer while waiting
                 gameStartWaitingMessageBlinkTimer += deltaSeconds;
+                // Accumulate waiting time
+                gameStartWaitingTime += deltaSeconds;
+
+                // If we've been waiting for 3+ seconds, regenerate asteroids
+                if (gameStartWaitingTime >= WAITING_REGENERATE_THRESHOLD) {
+                    game.populateAsteroids(asteroids, INITIAL_ASTEROID_COUNT);
+                    gameStartWaitingTime = 0.0f;  // Reset counter to try again
+                }
             }
         }
-
-        // Check if game is over
-        const bool gameOver = (game.getShipsRemaining() == 0 && !shipExplosion);
 
         // Only update ship if game has started, not destroyed, not waiting to respawn, and game is not over
         if (gameStarted && !shipDestroyed && !waitingToRespawn && !gameOver) {
@@ -152,6 +243,21 @@ void mainLoop(SDL_Window* window,
         // Update asteroids
         for (auto& asteroid : asteroids) {
             asteroid.update(deltaSeconds, SCREEN_WIDTH, SCREEN_HEIGHT);
+        }
+
+        // Update bolts and remove off-screen ones
+        for (auto& bolt : bolts) {
+            bolt.update(deltaSeconds, SCREEN_WIDTH, SCREEN_HEIGHT);
+        }
+        bolts.erase(
+            std::remove_if(bolts.begin(), bolts.end(),
+                [](const Bolt& bolt) { return bolt.isOffScreen(SCREEN_WIDTH, SCREEN_HEIGHT); }),
+            bolts.end()
+        );
+
+        // Collision detection - bolts vs asteroids
+        if (gameStarted && !gameOver) {
+            game.handleBoltAsteroidCollisions(bolts, asteroids);
         }
 
         // Collision detection - ship vs asteroids (only if game started, ship is not destroyed, not waiting, and game not over)
@@ -174,47 +280,7 @@ void mainLoop(SDL_Window* window,
         SDL_RenderClear(renderer);
 
         // Render header
-        constexpr float HEADER_SCALE = 2.5f;
-        constexpr float SUBHEADER_SCALE = 1.5f;
-        constexpr float TITLE_Y = 20.0f;
-        constexpr float INFO_Y = 45.0f;
-        constexpr float MARGIN = 20.0f;
-
-        // First line: Title centered
-        TextRenderer::renderText(renderer, "MORPHEUS",
-                                SCREEN_WIDTH / 2.0f, TITLE_Y,
-                                HEADER_SCALE, Colors::SILVER,
-                                TextRenderer::Alignment::CENTER);
-
-        // Second line: Score (left), Lives (center), High Score (right)
-        std::string scoreText = "SCORE " + std::to_string(game.getScore());
-        TextRenderer::renderText(renderer, scoreText,
-                                MARGIN, INFO_Y,
-                                SUBHEADER_SCALE, Colors::SILVER,
-                                TextRenderer::Alignment::LEFT);
-
-        // Lives: Draw ship icons centered
-        const int shipsRemaining = game.getShipsRemaining();
-        constexpr float SHIP_ICON_SCALE = 0.8f;
-        constexpr float SHIP_ICON_SPACING = 20.0f;
-        const float totalIconWidth = static_cast<float>(shipsRemaining) * SHIP_ICON_SPACING;
-        const float startX = (SCREEN_WIDTH / 2.0f) - (totalIconWidth / 2.0f) + (SHIP_ICON_SPACING / 2.0f);
-
-        SDL_SetRenderDrawColor(renderer,
-            SHIP_COLOR.r,
-            SHIP_COLOR.g,
-            SHIP_COLOR.b,
-            SHIP_COLOR.a);
-
-        for (int i = 0; i < shipsRemaining; ++i) {
-            Ship::renderIcon(renderer, startX + static_cast<float>(i) * SHIP_ICON_SPACING, INFO_Y + 10.0f, SHIP_ICON_SCALE);
-        }
-
-        std::string highScoreText = "HIGH " + std::to_string(game.getHighScore());
-        TextRenderer::renderText(renderer, highScoreText,
-                                SCREEN_WIDTH - MARGIN, INFO_Y,
-                                SUBHEADER_SCALE, Colors::SILVER,
-                                TextRenderer::Alignment::RIGHT);
+        const int shipsRemaining = renderHeader(renderer, game, SHIP_COLOR);
 
         // Render ship or explosion or game over
         if (shipsRemaining == 0 && !shipExplosion) {
@@ -238,6 +304,11 @@ void mainLoop(SDL_Window* window,
 
         for (auto& asteroid : asteroids) {
             asteroid.render(renderer, Colors::GRAY);
+        }
+
+        // Render bolts
+        for (const auto& bolt : bolts) {
+            bolt.render(renderer, Colors::SILVER);
         }
 
         // Render blinking "WAITING TO SAFELY RESPAWN" message if applicable

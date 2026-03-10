@@ -12,6 +12,8 @@
 #include "Asteroid.h"
 #include "Ship.h"
 
+class Bolt;  // Forward declaration
+
 class Game {
 public:
     Game();
@@ -38,6 +40,7 @@ public:
     // Collision handling
     bool handleShipAsteroidCollisions(Ship& ship, std::vector<Asteroid>& asteroids, float shipResetX, float shipResetY);
     void handleAsteroidAsteroidCollisions(std::vector<Asteroid>& asteroids) const;
+    void handleBoltAsteroidCollisions(std::vector<Bolt>& bolts, std::vector<Asteroid>& asteroids);
 
 private:
     int m_score;

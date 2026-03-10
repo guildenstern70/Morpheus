@@ -31,6 +31,8 @@ public:
     float getX() const;
     float getY() const;
     float getOrientation() const;
+    float getVelocityX() const;
+    float getVelocityY() const;
 
 private:
     float m_x;

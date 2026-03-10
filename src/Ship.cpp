@@ -157,3 +157,11 @@ float Ship::getOrientation() const {
     return m_orientationDegrees;
 }
 
+float Ship::getVelocityX() const {
+    return m_velocityX;
+}
+
+float Ship::getVelocityY() const {
+    return m_velocityY;
+}
+

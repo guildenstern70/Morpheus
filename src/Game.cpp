@@ -7,6 +7,7 @@
 //
 
 #include "Game.h"
+#include "Bolt.h"
 #include "config.h"
 
 #include <algorithm>
@@ -179,13 +180,16 @@ std::vector<Asteroid> Game::createFragments(const Asteroid& parent) {
 
     Asteroid::Size fragmentSize;
     bool shouldFragment = false;
+    int fragmentCount = 0;
 
     if (parent.getRadius() == 48.0f) {  // LARGE
         fragmentSize = Asteroid::Size::MEDIUM;
         shouldFragment = true;
+        fragmentCount = 3;  // LARGE breaks into 3 MEDIUM pieces
     } else if (parent.getRadius() == 32.0f) {  // MEDIUM
         fragmentSize = Asteroid::Size::SMALL;
         shouldFragment = true;
+        fragmentCount = 5;  // MEDIUM breaks into 5 SMALL pieces
     }
 
     if (!shouldFragment) {
@@ -193,11 +197,11 @@ std::vector<Asteroid> Game::createFragments(const Asteroid& parent) {
     }
 
     const float baseAngle = (static_cast<float>(rand()) / RAND_MAX) * 360.0f;
-    const float angleSpread = 45.0f;  // FRAGMENT_ANGLE_SPREAD_DEG
+    const float angleSpread = 360.0f / static_cast<float>(fragmentCount);  // Evenly spread fragments
     const float impulseMag = 40.0f;   // FRAGMENT_IMPULSE_MAGNITUDE
 
-    for (int i = 0; i < 3; ++i) {  // ASTEROID_FRAGMENTS_COUNT
-        const float angle = baseAngle + (i - 1) * angleSpread;
+    for (int i = 0; i < fragmentCount; ++i) {
+        const float angle = baseAngle + static_cast<float>(i) * angleSpread;
         const float angleRad = angle * (3.14159265358979323846f / 180.0f);
 
         const float impulseX = std::cos(angleRad) * impulseMag;
@@ -270,6 +274,58 @@ void Game::handleAsteroidAsteroidCollisions(std::vector<Asteroid>& asteroids) co
                     asteroids[j].getVelocityX() - dvx,
                     asteroids[j].getVelocityY() - dvy);
             }
+        }
+    }
+}
+
+void Game::handleBoltAsteroidCollisions(std::vector<Bolt>& bolts, std::vector<Asteroid>& asteroids) {
+    // Iterate through bolts
+    for (size_t boltIndex = 0; boltIndex < bolts.size(); ) {
+        bool boltHit = false;
+
+        // Check collision with asteroids
+        for (size_t asteroidIndex = 0; asteroidIndex < asteroids.size(); ) {
+            if (checkCircleCollision(
+                bolts[boltIndex].getX(),
+                bolts[boltIndex].getY(),
+                bolts[boltIndex].getRadius(),
+                asteroids[asteroidIndex].getX(),
+                asteroids[asteroidIndex].getY(),
+                asteroids[asteroidIndex].getRadius())) {
+
+                // Bolt hit asteroid!
+                boltHit = true;
+
+                // Create fragments based on asteroid size
+                auto fragments = createFragments(asteroids[asteroidIndex]);
+
+                // Award points based on asteroid size
+                if (asteroids[asteroidIndex].getRadius() == 48.0f) {  // LARGE
+                    addScore(20);
+                } else if (asteroids[asteroidIndex].getRadius() == 32.0f) {  // MEDIUM
+                    addScore(50);
+                } else {  // SMALL
+                    addScore(100);
+                }
+
+                // Remove the hit asteroid
+                asteroids.erase(asteroids.begin() + static_cast<std::ptrdiff_t>(asteroidIndex));
+
+                // Add fragments
+                asteroids.insert(asteroids.end(), fragments.begin(), fragments.end());
+
+                // Don't increment asteroidIndex since we erased an element
+                break;  // Bolt can only hit one asteroid, move to next bolt
+            } else {
+                ++asteroidIndex;
+            }
+        }
+
+        // Remove bolt if it hit an asteroid
+        if (boltHit) {
+            bolts.erase(bolts.begin() + static_cast<std::ptrdiff_t>(boltIndex));
+        } else {
+            ++boltIndex;
         }
     }
 }
