@@ -138,7 +138,7 @@ void Game::populateAsteroids(std::vector<Asteroid>& asteroids, int count) {
         // Random velocity between MIN_VELOCITY and MAX_VELOCITY
         const float velocityMagnitude = MIN_VELOCITY + (static_cast<float>(rand()) / RAND_MAX) * VELOCITY_RANGE;
         const float velocityAngle = (static_cast<float>(rand()) / RAND_MAX) * 360.0f;
-        const float angleRadians = velocityAngle * (3.14159265358979323846f / 180.0f);
+        const float angleRadians = velocityAngle * (PI / 180.0f);
         const float velocityX = std::cos(angleRadians) * velocityMagnitude;
         const float velocityY = std::sin(angleRadians) * velocityMagnitude;
 
@@ -202,7 +202,7 @@ void Game::repopulateAsteroidsPreservingProfile(std::vector<Asteroid>& asteroids
 
         const float velocityMagnitude = MIN_VELOCITY + (static_cast<float>(rand()) / RAND_MAX) * VELOCITY_RANGE;
         const float velocityAngle = (static_cast<float>(rand()) / RAND_MAX) * 360.0f;
-        const float angleRadians = velocityAngle * (3.14159265358979323846f / 180.0f);
+        const float angleRadians = velocityAngle * (PI / 180.0f);
         const float velocityX = std::cos(angleRadians) * velocityMagnitude;
         const float velocityY = std::sin(angleRadians) * velocityMagnitude;
 
@@ -276,7 +276,7 @@ std::vector<Asteroid> Game::createFragments(const Asteroid& parent) {
 
     for (int i = 0; i < fragmentCount; ++i) {
         const float angle = baseAngle + static_cast<float>(i) * angleSpread;
-        const float angleRad = angle * (3.14159265358979323846f / 180.0f);
+        const float angleRad = angle * (PI / 180.0f);
 
         const float impulseX = std::cos(angleRad) * impulseMag;
         const float impulseY = std::sin(angleRad) * impulseMag;

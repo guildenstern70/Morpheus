@@ -7,21 +7,18 @@
 //
 
 #include "Bolt.h"
+#include "config.h"
 #include <cmath>
 
 constexpr float BOLT_SPEED = 400.0f;  // Speed of the bolt
 constexpr float BOLT_RADIUS = 1.0f;   // Collision radius of the bolt
 
-Bolt::Bolt(const float x,
-           const float y,
-           const float angle,
-           const float shipVelocityX,
-           const float shipVelocityY)
+Bolt::Bolt(float x, float y, float angle, float shipVelocityX, float shipVelocityY)
     : m_x(x)
     , m_y(y)
 {
     // Convert angle from degrees to radians
-    const float angleRadians = angle * (3.14159265358979323846f / 180.0f);
+    const float angleRadians = angle * (PI / 180.0f);
 
     // Bolt moves in the direction the ship is facing plus ship's velocity
     // Ship's forward direction: sin(angle) for X, -cos(angle) for Y (matching ship thrust)
@@ -48,8 +45,8 @@ void Bolt::render(SDL_Renderer* renderer, const Colors::Color& color) const {
 
     // Draw filled circle by drawing lines from center to edge points
     for (int i = 0; i < CIRCLE_SEGMENTS; ++i) {
-        const float angle1 = (static_cast<float>(i) / CIRCLE_SEGMENTS) * 2.0f * 3.14159265358979323846f;
-        const float angle2 = (static_cast<float>(i + 1) / CIRCLE_SEGMENTS) * 2.0f * 3.14159265358979323846f;
+        const float angle1 = (static_cast<float>(i) / CIRCLE_SEGMENTS) * 2.0f * PI;
+        const float angle2 = (static_cast<float>(i + 1) / CIRCLE_SEGMENTS) * 2.0f * PI;
 
         const float x1 = m_x + std::cos(angle1) * BOLT_RENDER_RADIUS;
         const float y1 = m_y + std::sin(angle1) * BOLT_RENDER_RADIUS;

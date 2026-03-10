@@ -7,12 +7,10 @@
 //
 
 #include "ShipExplosion.h"
+#include "config.h"
 #include <cmath>
 #include <cstdlib>
 
-namespace {
-constexpr float kPi = 3.14159265358979323846f;
-}
 
 ShipExplosion::ShipExplosion(const float shipX, const float shipY, const float shipOrientation)
     : m_elapsedTime(0.0f) {
@@ -33,7 +31,7 @@ void ShipExplosion::render(SDL_Renderer* renderer, const Colors::Color& color) c
     SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
 
     for (const auto& particle : m_particles) {
-        const float angleRadians = particle.rotation * (kPi / 180.0f);
+        const float angleRadians = particle.rotation * (PI / 180.0f);
         const float cosA = std::cos(angleRadians);
         const float sinA = std::sin(angleRadians);
 
@@ -85,13 +83,13 @@ void ShipExplosion::createDebris(float shipX, float shipY, float shipOrientation
         Particle particle;
 
         // Random position around ship center (slightly spread)
-        const float offsetAngle = (static_cast<float>(rand()) / RAND_MAX) * 2.0f * kPi;
+        const float offsetAngle = (static_cast<float>(rand()) / RAND_MAX) * 2.0f * PI;
         const float offsetDist = (static_cast<float>(rand()) / RAND_MAX) * 5.0f;
         particle.x = shipX + std::cos(offsetAngle) * offsetDist;
         particle.y = shipY + std::sin(offsetAngle) * offsetDist;
 
         // Random velocity radiating outward from ship
-        const float angle = (static_cast<float>(i) / NUM_PIECES) * 2.0f * kPi +
+        const float angle = (static_cast<float>(i) / NUM_PIECES) * 2.0f * PI +
                            (static_cast<float>(rand()) / RAND_MAX - 0.5f) * 0.5f;
         const float speed = BASE_SPEED + (static_cast<float>(rand()) / RAND_MAX) * SPEED_VARIATION;
         particle.velocityX = std::cos(angle) * speed;

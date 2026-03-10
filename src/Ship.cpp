@@ -7,13 +7,11 @@
 //
 
 #include "Ship.h"
+#include "config.h"
 
 #include <array>
 #include <cmath>
 
-namespace {
-constexpr float kPi = 3.14159265358979323846f;
-}
 
 Ship::Ship(float centerX, float centerY)
     : m_x(centerX),
@@ -41,7 +39,7 @@ void Ship::update(const bool turningLeft,
     normalizeOrientation();
 
     if (thrusting) {
-        const float angleRadians = m_orientationDegrees * (kPi / 180.0f);
+        const float angleRadians = m_orientationDegrees * (PI / 180.0f);
         const float thrustX = std::sin(angleRadians) * thrustAcceleration * deltaSeconds;
         const float thrustY = -std::cos(angleRadians) * thrustAcceleration * deltaSeconds;
         m_velocityX += thrustX;
@@ -55,7 +53,7 @@ void Ship::update(const bool turningLeft,
 void Ship::render(SDL_Renderer* renderer, bool showThrust) const {
     const std::array<SDL_FPoint, 5> localPoints = {{{0.0f, -10.4f}, {-6.4f, 8.0f}, {0.0f, 3.2f}, {6.4f, 8.0f}, {0.0f, -10.4f}}};
 
-    const float angleRadians = m_orientationDegrees * (kPi / 180.0f);
+    const float angleRadians = m_orientationDegrees * (PI / 180.0f);
     const float cosA = std::cos(angleRadians);
     const float sinA = std::sin(angleRadians);
 

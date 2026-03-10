@@ -137,7 +137,7 @@ void mainLoop(SDL_Window* window,
                         if (gameStarted && !shipDestroyed && !waitingToRespawn && !levelClearedMessageVisible && !gameOver && timeSinceLastFire >= FIRE_COOLDOWN) {
                             // Calculate bolt starting position at ship's nose
                             // Ship's forward direction: sin(angle) for X, -cos(angle) for Y
-                            const float shipAngleRad = ship.getOrientation() * (3.14159265358979323846f / 180.0f);
+                            const float shipAngleRad = ship.getOrientation() * (PI / 180.0f);
                             constexpr float SHIP_NOSE_OFFSET = 12.0f;  // Distance from center to nose
                             const float boltStartX = ship.getX() + std::sin(shipAngleRad) * SHIP_NOSE_OFFSET;
                             const float boltStartY = ship.getY() + (-std::cos(shipAngleRad)) * SHIP_NOSE_OFFSET;

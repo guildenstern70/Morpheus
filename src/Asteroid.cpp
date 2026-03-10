@@ -13,9 +13,6 @@
 #include <array>
 #include <cmath>
 
-namespace {
-constexpr float kPi = 3.14159265358979323846f;
-}
 
 Asteroid::Asteroid(const float x,
     const float y,
@@ -43,7 +40,7 @@ void Asteroid::render(SDL_Renderer* renderer, const Colors::Color& color) const 
     SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
 
     const float radius = getRadiusForSize();
-    const float angleRadians = m_rotationDegrees * (kPi / 180.0f);
+    const float angleRadians = m_rotationDegrees * (PI / 180.0f);
     const float cosA = std::cos(angleRadians);
     const float sinA = std::sin(angleRadians);
 

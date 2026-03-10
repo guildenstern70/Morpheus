@@ -12,6 +12,10 @@ constexpr int SCREEN_WIDTH = 800;
 constexpr int SCREEN_HEIGHT = 600;
 constexpr auto WINDOW_TITLE = "Morpheus";
 
+// Mathematical constants
+constexpr float PI = 3.14159265358979323846f;
+
+// Ship configuration
 constexpr float SHIP_TURN_SPEED_DEG_PER_SEC = 180.0f;
 constexpr float SHIP_THRUST_ACCELERATION = 200.0f;
 constexpr float SHIP_CENTER_X = SCREEN_WIDTH / 2.0f;
