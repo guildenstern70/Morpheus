@@ -18,7 +18,8 @@
 Game::Game()
     : m_score(0),
       m_shipsRemaining(3),
-      m_highScore(0) {
+      m_highScore(0),
+      m_currentLevel(1) {
     srand(static_cast<unsigned>(time(nullptr)));
 }
 
@@ -56,6 +57,18 @@ int Game::getHighScore() const {
 
 void Game::updateHighScore() {
     m_highScore = std::max(m_highScore, m_score);
+}
+
+int Game::getCurrentLevel() const {
+    return m_currentLevel;
+}
+
+int Game::getAsteroidCountForCurrentLevel() const {
+    return LEVEL_ONE_ASTEROID_COUNT + (m_currentLevel - 1) * LEVEL_ASTEROID_INCREMENT;
+}
+
+void Game::advanceLevel() {
+    ++m_currentLevel;
 }
 
 void Game::populateAsteroids(std::vector<Asteroid>& asteroids, int count) {
@@ -136,6 +149,67 @@ void Game::populateAsteroids(std::vector<Asteroid>& asteroids, int count) {
 
         asteroids.emplace_back(x, y, velocityX, velocityY, size, shape);
     }
+}
+
+void Game::repopulateAsteroidsPreservingProfile(std::vector<Asteroid>& asteroids, const std::vector<Asteroid>& profile) {
+    constexpr float MIN_VELOCITY = 2.0f;
+    constexpr float MAX_VELOCITY = 6.0f;
+    constexpr float VELOCITY_RANGE = MAX_VELOCITY - MIN_VELOCITY;
+    constexpr int MAX_PLACEMENT_ATTEMPTS = 100;
+    constexpr float MIN_SEPARATION_MARGIN = 10.0f;
+
+    std::vector<Asteroid> regenerated;
+    regenerated.reserve(profile.size());
+
+    for (const auto& source : profile) {
+        bool positionFound = false;
+        float x = 0.0f;
+        float y = 0.0f;
+        const Asteroid::Size size = source.getSize();
+        const Asteroid::Shape shape = source.getShape();
+
+        float radius = ASTEROID_LARGE_RADIUS;
+        if (size == Asteroid::Size::SMALL) {
+            radius = ASTEROID_SMALL_RADIUS;
+        } else if (size == Asteroid::Size::MEDIUM) {
+            radius = ASTEROID_MEDIUM_RADIUS;
+        }
+
+        for (int attempt = 0; attempt < MAX_PLACEMENT_ATTEMPTS; ++attempt) {
+            x = static_cast<float>(rand() % SCREEN_WIDTH);
+            y = static_cast<float>(rand() % SCREEN_HEIGHT);
+
+            bool overlaps = false;
+            for (const auto& existing : regenerated) {
+                if (checkCircleCollision(x, y, radius + MIN_SEPARATION_MARGIN / 2.0f,
+                                         existing.getX(), existing.getY(),
+                                         existing.getRadius() + MIN_SEPARATION_MARGIN / 2.0f)) {
+                    overlaps = true;
+                    break;
+                }
+            }
+
+            if (!overlaps) {
+                positionFound = true;
+                break;
+            }
+        }
+
+        if (!positionFound) {
+            x = static_cast<float>(rand() % SCREEN_WIDTH);
+            y = static_cast<float>(rand() % SCREEN_HEIGHT);
+        }
+
+        const float velocityMagnitude = MIN_VELOCITY + (static_cast<float>(rand()) / RAND_MAX) * VELOCITY_RANGE;
+        const float velocityAngle = (static_cast<float>(rand()) / RAND_MAX) * 360.0f;
+        const float angleRadians = velocityAngle * (3.14159265358979323846f / 180.0f);
+        const float velocityX = std::cos(angleRadians) * velocityMagnitude;
+        const float velocityY = std::sin(angleRadians) * velocityMagnitude;
+
+        regenerated.emplace_back(x, y, velocityX, velocityY, size, shape);
+    }
+
+    asteroids = std::move(regenerated);
 }
 
 bool Game::checkCircleCollision(const float x1,

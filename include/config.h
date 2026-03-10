@@ -24,13 +24,15 @@ constexpr float ASTEROID_MEDIUM_RADIUS = 32.0f;
 constexpr float ASTEROID_SMALL_RADIUS = 16.0f;
 constexpr float ASTEROID_ROTATION_SPEED_DEG_PER_SEC = 20.0f;
 constexpr float ASTEROID_BASE_SPEED = 40.0f;
-constexpr int INITIAL_ASTEROID_COUNT = 20;
+constexpr int LEVEL_ONE_ASTEROID_COUNT = 5;
+constexpr int LEVEL_ASTEROID_INCREMENT = 2;
+constexpr float LEVEL_CLEARED_MESSAGE_DURATION = 1.5f;
 
 // Collision configuration
 constexpr int ASTEROID_FRAGMENTS_COUNT = 3;
 constexpr float FRAGMENT_IMPULSE_MAGNITUDE = 40.0f;
 constexpr float FRAGMENT_ANGLE_SPREAD_DEG = 45.0f;
 
+constexpr float WAITING_REGENERATE_THRESHOLD = 3.0f;
 constexpr int TARGET_FPS = 60;
 constexpr float TARGET_FRAME_TIME_MS = 1000.0f / static_cast<float>(TARGET_FPS);
-

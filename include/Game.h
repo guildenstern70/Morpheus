@@ -29,7 +29,12 @@ public:
     int getHighScore() const;
     void updateHighScore();
 
+    int getCurrentLevel() const;
+    int getAsteroidCountForCurrentLevel() const;
+    void advanceLevel();
+
     void populateAsteroids(std::vector<Asteroid>& asteroids, int count);
+    void repopulateAsteroidsPreservingProfile(std::vector<Asteroid>& asteroids, const std::vector<Asteroid>& profile);
 
     // Collision detection
     bool checkCircleCollision(float x1, float y1, float r1, float x2, float y2, float r2) const;
@@ -46,5 +51,5 @@ private:
     int m_score;
     int m_shipsRemaining;
     int m_highScore;
+    int m_currentLevel;
 };
-

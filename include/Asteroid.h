@@ -35,6 +35,8 @@ public:
     float getRadius() const;
     float getVelocityX() const;
     float getVelocityY() const;
+    Size getSize() const;
+    Shape getShape() const;
     void setVelocity(float velocityX, float velocityY);
 
 private:
@@ -51,5 +53,4 @@ private:
     float getRadiusForSize() const;
     void renderShape(SDL_Renderer* renderer, const SDL_FPoint* points, size_t pointCount) const;
 };
-
 

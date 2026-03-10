@@ -107,6 +107,14 @@ float Asteroid::getVelocityY() const {
     return m_velocityY;
 }
 
+Asteroid::Size Asteroid::getSize() const {
+    return m_size;
+}
+
+Asteroid::Shape Asteroid::getShape() const {
+    return m_shape;
+}
+
 void Asteroid::setVelocity(const float velocityX, const float velocityY) {
     m_velocityX = velocityX;
     m_velocityY = velocityY;

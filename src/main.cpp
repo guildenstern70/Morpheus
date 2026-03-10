@@ -7,6 +7,7 @@
 //
 
 #include <SDL3/SDL.h>
+#include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <vector>
@@ -79,7 +80,7 @@ void mainLoop(SDL_Window* window,
     SDL_Event event;
 
     std::vector<Asteroid> asteroids;
-    game.populateAsteroids(asteroids, INITIAL_ASTEROID_COUNT);
+    game.populateAsteroids(asteroids, game.getAsteroidCountForCurrentLevel());
 
     // Bolts
     std::vector<Bolt> bolts;
@@ -94,9 +95,15 @@ void mainLoop(SDL_Window* window,
     float gameStartWaitingMessageBlinkTimer = 0.0f;
 
     // Waiting timers for asteroid regeneration (3 seconds before regenerating)
-    constexpr float WAITING_REGENERATE_THRESHOLD = 3.0f;
     float respawnWaitingTime = 0.0f;  // Accumulated waiting time for respawn
     float gameStartWaitingTime = 0.0f;  // Accumulated waiting time for game start
+
+    // Level transition state
+    bool levelClearedMessageVisible = false;
+    float levelClearedMessageTimer = 0.0f;
+
+    // Snapshot of asteroids at the moment respawn waiting starts.
+    std::vector<Asteroid> respawnAsteroidProfile;
 
     // Game start safety - check if initial spawn position is safe
     constexpr float SPAWN_SAFETY_RADIUS = 50.0f;
@@ -126,8 +133,8 @@ void mainLoop(SDL_Window* window,
                     } else if (event.key.key == SDLK_UP) {
                         thrusting = true;
                     } else if (event.key.key == SDLK_SPACE) {
-                        // Fire bolt if game started, not destroyed, not waiting, and cooldown ready
-                        if (gameStarted && !shipDestroyed && !waitingToRespawn && !gameOver && timeSinceLastFire >= FIRE_COOLDOWN) {
+                        // Fire bolt if game started, not destroyed, not waiting, not in level transition, and cooldown ready
+                        if (gameStarted && !shipDestroyed && !waitingToRespawn && !levelClearedMessageVisible && !gameOver && timeSinceLastFire >= FIRE_COOLDOWN) {
                             // Calculate bolt starting position at ship's nose
                             // Ship's forward direction: sin(angle) for X, -cos(angle) for Y
                             const float shipAngleRad = ship.getOrientation() * (3.14159265358979323846f / 180.0f);
@@ -162,6 +169,23 @@ void mainLoop(SDL_Window* window,
         // Update fire cooldown timer
         timeSinceLastFire += deltaSeconds;
 
+        if (levelClearedMessageVisible) {
+            levelClearedMessageTimer += deltaSeconds;
+            if (levelClearedMessageTimer >= LEVEL_CLEARED_MESSAGE_DURATION) {
+                levelClearedMessageVisible = false;
+                levelClearedMessageTimer = 0.0f;
+                game.advanceLevel();
+                game.populateAsteroids(asteroids, game.getAsteroidCountForCurrentLevel());
+
+                // Re-run safe deployment check for the new wave.
+                gameStarted = game.isPositionSafe(SHIP_CENTER_X, SHIP_CENTER_Y, SPAWN_SAFETY_RADIUS, asteroids);
+                if (!gameStarted) {
+                    gameStartWaitingMessageBlinkTimer = 0.0f;
+                    gameStartWaitingTime = 0.0f;
+                }
+            }
+        }
+
         // Update explosion animation if active
         if (shipExplosion) {
             shipExplosion->update(deltaSeconds);
@@ -173,7 +197,6 @@ void mainLoop(SDL_Window* window,
                 // Only reset ship if there are lives remaining
                 if (game.getShipsRemaining() > 0) {
                     // Check if spawn position is safe
-                    constexpr float SPAWN_SAFETY_RADIUS = 50.0f;  // Safe area around spawn point
                     if (game.isPositionSafe(SHIP_CENTER_X, SHIP_CENTER_Y, SPAWN_SAFETY_RADIUS, asteroids)) {
                         // Safe to respawn immediately
                         ship = Ship(SHIP_CENTER_X, SHIP_CENTER_Y);
@@ -181,6 +204,7 @@ void mainLoop(SDL_Window* window,
                     } else {
                         // Wait until the spawn area is clear
                         waitingToRespawn = true;
+                        respawnAsteroidProfile = asteroids;
                     }
                 }
             }
@@ -188,12 +212,12 @@ void mainLoop(SDL_Window* window,
 
         // If waiting to respawn, check if position is safe now
         if (waitingToRespawn && game.getShipsRemaining() > 0) {
-            constexpr float SPAWN_SAFETY_RADIUS = 50.0f;
             if (game.isPositionSafe(SHIP_CENTER_X, SHIP_CENTER_Y, SPAWN_SAFETY_RADIUS, asteroids)) {
                 ship = Ship(SHIP_CENTER_X, SHIP_CENTER_Y);
                 waitingToRespawn = false;
                 respawnWaitingMessageBlinkTimer = 0.0f;  // Reset timer when respawning
                 respawnWaitingTime = 0.0f;  // Reset waiting time counter
+                respawnAsteroidProfile.clear();
             } else {
                 // Update blink timer
                 respawnWaitingMessageBlinkTimer += deltaSeconds;
@@ -202,7 +226,11 @@ void mainLoop(SDL_Window* window,
 
                 // If we've been waiting for 3+ seconds, regenerate asteroids
                 if (respawnWaitingTime >= WAITING_REGENERATE_THRESHOLD) {
-                    game.populateAsteroids(asteroids, INITIAL_ASTEROID_COUNT);
+                    if (!respawnAsteroidProfile.empty()) {
+                        game.repopulateAsteroidsPreservingProfile(asteroids, respawnAsteroidProfile);
+                    } else {
+                        game.populateAsteroids(asteroids, game.getAsteroidCountForCurrentLevel());
+                    }
                     respawnWaitingTime = 0.0f;  // Reset counter to try again
                 }
             }
@@ -222,7 +250,7 @@ void mainLoop(SDL_Window* window,
 
                 // If we've been waiting for 3+ seconds, regenerate asteroids
                 if (gameStartWaitingTime >= WAITING_REGENERATE_THRESHOLD) {
-                    game.populateAsteroids(asteroids, INITIAL_ASTEROID_COUNT);
+                    game.populateAsteroids(asteroids, game.getAsteroidCountForCurrentLevel());
                     gameStartWaitingTime = 0.0f;  // Reset counter to try again
                 }
             }
@@ -269,6 +297,14 @@ void mainLoop(SDL_Window* window,
             }
         }
 
+        if (gameStarted && !gameOver && !shipDestroyed && !waitingToRespawn && !levelClearedMessageVisible && asteroids.empty()) {
+            const int clearedLevel = game.getCurrentLevel();
+            game.addScore(100 * clearedLevel);
+            levelClearedMessageVisible = true;
+            levelClearedMessageTimer = 0.0f;
+            bolts.clear();
+        }
+
         // Collision detection - asteroid vs asteroid (elastic bounce)
         game.handleAsteroidAsteroidCollisions(asteroids);
 
@@ -289,6 +325,12 @@ void mainLoop(SDL_Window* window,
             TextRenderer::renderText(renderer, "GAME OVER",
                                     SCREEN_WIDTH / 2.0f, SCREEN_HEIGHT / 2.0f - 25.0f,
                                     GAME_OVER_SCALE, Colors::SILVER,
+                                    TextRenderer::Alignment::CENTER);
+        } else if (levelClearedMessageVisible) {
+            constexpr float LEVEL_CLEARED_SCALE = 4.0f;
+            TextRenderer::renderText(renderer, "LEVEL CLEARED",
+                                    SCREEN_WIDTH / 2.0f, SCREEN_HEIGHT / 2.0f - 25.0f,
+                                    LEVEL_CLEARED_SCALE, Colors::SILVER,
                                     TextRenderer::Alignment::CENTER);
         } else if (shipExplosion) {
             shipExplosion->render(renderer, SHIP_COLOR);
