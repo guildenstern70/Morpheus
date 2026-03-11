@@ -11,17 +11,24 @@ Agent onboarding and working agreement for the `Morpheus` repository.
   - A green wireframe ship shaped like an `A`, centered on screen
   - Ship rotation with Left/Right arrow keys (180°/sec turning speed)
   - Thrust with Up arrow, accelerating ship in facing direction (200 units/sec acceleration)
+  - Shooting with Space bar (bolts inherit ship velocity, with a fire cooldown)
   - Thrust flame visual at ship rear when accelerating
   - Screen wraps toroidally (edges loop around like a sphere)
   - 5 asteroids spawn randomly on screen with random velocities (2-6 units/sec)
+  - Progressive waves: each cleared level increases asteroid count (`+2` per level)
   - Asteroids rotate slowly at 20°/sec
+  - Ship explosion animation (~2 seconds) before respawn
+  - Safe deployment and safe respawn checks with waiting messages and asteroid regeneration fallback
+  - HUD rendered in-game (title, score, lives icons, high score)
+  - Game-over state/message when ships reach 0
   - **Collision detection system**:
     - Circle-based collision detection (ship radius: 10px, asteroid radius varies by size)
     - Ship-asteroid collisions: ship loses a life and respawns at center, asteroid breaks into fragments
-    - Asteroid-asteroid collisions: both asteroids break into fragments
-    - Asteroid fragmentation: LARGE → 3 MEDIUM pieces, MEDIUM → 3 SMALL pieces, SMALL → destroyed
-    - Fragments inherit parent position and receive impulse-based velocity (40 units/sec spread at ±45°)
-  - Game state tracks score, high score, and ships remaining (default: 3)
+    - Asteroid-asteroid collisions: elastic bounce (velocity exchange along collision normal)
+    - Bolt-asteroid collisions: asteroid breaks into fragments and awards score
+    - Asteroid fragmentation: LARGE → 3 MEDIUM pieces, MEDIUM → 5 SMALL pieces, SMALL → destroyed
+    - Fragments inherit parent position and receive impulse-based velocity (~40 units/sec)
+  - Game state tracks score, high score, ships remaining (default: 3), and current level
 
 ## 2) Tech Stack
 
@@ -35,9 +42,9 @@ Agent onboarding and working agreement for the `Morpheus` repository.
 ## 3) Repository Layout
 
 - `src/` - C++ source files (current game loop lives in `src/main.cpp`)
-- `include/` - headers (currently minimal/empty)
+- `include/` - headers for game entities and systems (`Game`, `Ship`, `Asteroid`, `Bolt`, `ShipExplosion`, `TextRenderer`, plus config/colors/shapes)
 - `assets/` - runtime assets copied to executable output dir after build
-  - `images/ship.png` is a visual reference for ship shape
+  - `images/Screenshot.png` contains a gameplay screenshot
 - `CMakeLists.txt` - build definition and SDL3 linkage
 - `README.md` - user-facing project setup notes
 - `build/`, `cmake-build-*` - generated build output (do not hand-edit)
@@ -68,9 +75,10 @@ cmake --build .
 - Frame flow:
   1. Poll input events
   2. Compute `deltaSeconds`
-  3. Update ship angle
-  4. Render scene
-  5. Delay remaining frame budget for 60 FPS cap
+  3. Update game state (ship, asteroids, bolts, explosions, respawn/level transitions)
+  4. Resolve collisions (`bolt-asteroid`, `ship-asteroid`, `asteroid-asteroid`)
+  5. Render HUD, entities, and state messages
+  6. Delay remaining frame budget for 60 FPS cap
 
 ## 6) Controls (Current)
 
@@ -78,6 +86,7 @@ cmake --build .
 - `Left Arrow`: Turn left (counterclockwise)
 - `Right Arrow`: Turn right (clockwise)
 - `Up Arrow`: Apply thrust (accelerate in facing direction)
+- `Space`: Fire bolt
 
 ## 7) Source-of-Truth Notes
 
@@ -87,9 +96,12 @@ cmake --build .
 
 - Keep changes minimal and targeted.
 - Prefer small, composable constants for gameplay tuning.
-- Use Object Oriented Programming (OOP) principles for future extensibility (e.g. `Ship` class).
+- Use Object-Oriented Programming (OOP) principles for future extensibility (e.g. `Ship` class).
 - Follow naming style as in Google C++ Style guide - https://google.github.io/styleguide/cppguide.html#General_Naming_Rules
-- Preserve the existing style in touched files.
+    - Classes: `PascalCase`
+    - Member variables: `m_camelCase` prefix
+    - Constants: `UPPER_CASE` or `kCamelCase`
+    - Free functions and methods: `camelCase`
 - Avoid introducing non-ASCII unless already present and needed.
 - Add comments only where logic is non-obvious.
 - Do not refactor unrelated code in the same change.
@@ -115,11 +127,8 @@ Then perform a quick run smoke test to ensure startup and input/render still wor
 
 ## 11) Near-Term Backlog Suggestions
 
-- Add projectile shooting (space bar) with collision detection against asteroids
-- Add scoring system (points for destroying asteroids: large=20, medium=50, small=100)
-- Add score/lives UI rendering on screen using SDL text or simple graphics
 - Implement ship respawn invulnerability period (flashing effect for 2-3 seconds)
-- Implement game-over state when ships reach 0 with restart option
+- Implement restart option after game-over
 - Add enemy UFO spawning with AI behavior and shooting
 - Add sound effects (thrust, laser, collision, explosion)
 - Implement difficulty scaling with progressive waves

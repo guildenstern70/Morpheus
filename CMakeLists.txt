@@ -4,6 +4,7 @@ project(Morpheus VERSION 0.0.1 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+option(MORPHEUS_COMPILE_ONLY "Compile sources without creating the final executable" OFF)
 
 # Find SDL3
 if(WIN32)
@@ -23,9 +24,6 @@ if(WIN32)
         message(FATAL_ERROR "SDL3 not found in libs/SDL3. Please download SDL3-devel-*-VC.zip and extract to libs/SDL3")
     endif()
 else()
-    # Unix-like systems: Use find_package
-    list(APPEND CMAKE_PREFIX_PATH "${CMAKE_CURRENT_SOURCE_DIR}/libs")
-    set(SDL3_DIR "${CMAKE_CURRENT_SOURCE_DIR}/libs/SDL3/cmake" CACHE PATH "Path to SDL3 CMake config")
     find_package(SDL3 3.4.2 REQUIRED CONFIG)
 endif()
 
@@ -33,19 +31,25 @@ endif()
 file(GLOB_RECURSE SOURCES "src/*.cpp")
 file(GLOB_RECURSE HEADERS "include/*.h")
 
-# Create executable
-add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
+if(MORPHEUS_COMPILE_ONLY)
+    # Compile all project translation units without the final link step.
+    add_library(${PROJECT_NAME}Objects OBJECT ${SOURCES} ${HEADERS})
+    set(MORPHEUS_TARGET ${PROJECT_NAME}Objects)
+else()
+    add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
+    set(MORPHEUS_TARGET ${PROJECT_NAME})
+endif()
 
 # Include directories
-target_include_directories(${PROJECT_NAME} PRIVATE 
+target_include_directories(${MORPHEUS_TARGET} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
 # Link libraries
-target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3)
+target_link_libraries(${MORPHEUS_TARGET} PRIVATE SDL3::SDL3)
 
 # Copy SDL3.dll to output directory on Windows
-if(WIN32)
+if(WIN32 AND NOT MORPHEUS_COMPILE_ONLY)
     add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
         "${SDL3_LIBRARY_DIR}/SDL3.dll"
@@ -54,15 +58,17 @@ if(WIN32)
 endif()
 
 # Copy assets to build directory
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-    ${CMAKE_SOURCE_DIR}/assets
-    $<TARGET_FILE_DIR:${PROJECT_NAME}>/assets
-)
+if(NOT MORPHEUS_COMPILE_ONLY)
+    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/assets
+        $<TARGET_FILE_DIR:${PROJECT_NAME}>/assets
+    )
+endif()
 
 # Compiler warnings
 if(MSVC)
-    target_compile_options(${PROJECT_NAME} PRIVATE /W4)
+    target_compile_options(${MORPHEUS_TARGET} PRIVATE /W4)
 else()
-    target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic)
+    target_compile_options(${MORPHEUS_TARGET} PRIVATE -Wall -Wextra -Wpedantic)
 endif()
