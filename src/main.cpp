@@ -98,6 +98,11 @@ void mainLoop(SDL_Window* window,
     float respawnWaitingTime = 0.0f;  // Accumulated waiting time for respawn
     float gameStartWaitingTime = 0.0f;  // Accumulated waiting time for game start
 
+    // INSERT COIN screen state (shown at startup and after game over)
+    bool insertCoinScreen = true;
+    float insertCoinBlinkTimer = 0.0f;
+    float gameOverDisplayTimer = 0.0f;
+
     // Level transition state
     bool levelClearedMessageVisible = false;
     float levelClearedMessageTimer = 0.0f;
@@ -116,7 +121,7 @@ void mainLoop(SDL_Window* window,
         const Uint64 frameStartTicks = SDL_GetTicks();
 
         // Check if game is over (needed for event handling)
-        const bool gameOver = (game.getShipsRemaining() == 0 && !shipExplosion);
+        const bool gameOver = (game.getShipsRemaining() == 0 && !shipExplosion && !insertCoinScreen);
 
         while (SDL_PollEvent(&event)) {
             switch (event.type) {
@@ -126,6 +131,32 @@ void mainLoop(SDL_Window* window,
                 case SDL_EVENT_KEY_DOWN:
                     if (event.key.key == SDLK_ESCAPE) {
                         running = false;
+                    } else if (event.key.key == SDLK_C) {
+                        if (insertCoinScreen) {
+                            // Preserve high score across resets
+                            const int savedHighScore = game.getHighScore();
+                            game = Game();
+                            game.setHighScore(savedHighScore);
+                            ship = Ship(SHIP_CENTER_X, SHIP_CENTER_Y);
+                            asteroids.clear();
+                            game.populateAsteroids(asteroids, game.getAsteroidCountForCurrentLevel());
+                            bolts.clear();
+                            shipExplosion = nullptr;
+                            shipDestroyed = false;
+                            waitingToRespawn = false;
+                            levelClearedMessageVisible = false;
+                            levelClearedMessageTimer = 0.0f;
+                            timeSinceLastFire = FIRE_COOLDOWN;
+                            gameOverDisplayTimer = 0.0f;
+                            insertCoinBlinkTimer = 0.0f;
+                            respawnWaitingTime = 0.0f;
+                            gameStartWaitingTime = 0.0f;
+                            respawnWaitingMessageBlinkTimer = 0.0f;
+                            gameStartWaitingMessageBlinkTimer = 0.0f;
+                            respawnAsteroidProfile.clear();
+                            gameStarted = game.isPositionSafe(SHIP_CENTER_X, SHIP_CENTER_Y, SPAWN_SAFETY_RADIUS, asteroids);
+                            insertCoinScreen = false;
+                        }
                     } else if (event.key.key == SDLK_LEFT) {
                         turningLeft = true;
                     } else if (event.key.key == SDLK_RIGHT) {
@@ -168,6 +199,38 @@ void mainLoop(SDL_Window* window,
 
         // Update fire cooldown timer
         timeSinceLastFire += deltaSeconds;
+
+        // Update INSERT COIN blink timer
+        insertCoinBlinkTimer += deltaSeconds;
+
+        // After game over, wait a few seconds then transition to INSERT COIN screen
+        if (gameOver) {
+            gameOverDisplayTimer += deltaSeconds;
+            if (gameOverDisplayTimer >= GAME_OVER_DISPLAY_DURATION) {
+                const int savedHighScore = game.getHighScore();
+                game = Game();
+                game.setHighScore(savedHighScore);
+                ship = Ship(SHIP_CENTER_X, SHIP_CENTER_Y);
+                asteroids.clear();
+                game.populateAsteroids(asteroids, game.getAsteroidCountForCurrentLevel());
+                bolts.clear();
+                shipExplosion = nullptr;
+                shipDestroyed = false;
+                waitingToRespawn = false;
+                levelClearedMessageVisible = false;
+                levelClearedMessageTimer = 0.0f;
+                timeSinceLastFire = FIRE_COOLDOWN;
+                gameOverDisplayTimer = 0.0f;
+                insertCoinBlinkTimer = 0.0f;
+                respawnWaitingTime = 0.0f;
+                gameStartWaitingTime = 0.0f;
+                respawnWaitingMessageBlinkTimer = 0.0f;
+                gameStartWaitingMessageBlinkTimer = 0.0f;
+                respawnAsteroidProfile.clear();
+                gameStarted = game.isPositionSafe(SHIP_CENTER_X, SHIP_CENTER_Y, SPAWN_SAFETY_RADIUS, asteroids);
+                insertCoinScreen = true;
+            }
+        }
 
         if (levelClearedMessageVisible) {
             levelClearedMessageTimer += deltaSeconds;
@@ -237,7 +300,7 @@ void mainLoop(SDL_Window* window,
         }
 
         // If game hasn't started yet (initial spawn check), check if position is safe now
-        if (!gameStarted) {
+        if (!gameStarted && !insertCoinScreen) {
             if (game.isPositionSafe(SHIP_CENTER_X, SHIP_CENTER_Y, SPAWN_SAFETY_RADIUS, asteroids)) {
                 gameStarted = true;
                 gameStartWaitingMessageBlinkTimer = 0.0f;  // Reset timer when game starts
@@ -289,7 +352,7 @@ void mainLoop(SDL_Window* window,
         }
 
         // Collision detection - ship vs asteroids (only if game started, ship is not destroyed, not waiting, and game not over)
-        if (gameStarted && !shipDestroyed && !waitingToRespawn && !gameOver) {
+        if (gameStarted && !shipDestroyed && !waitingToRespawn && !gameOver && !insertCoinScreen) {
             if (game.handleShipAsteroidCollisions(ship, asteroids, SHIP_CENTER_X, SHIP_CENTER_Y)) {
                 // Collision occurred - create explosion
                 shipExplosion = std::make_unique<ShipExplosion>(ship.getX(), ship.getY(), ship.getOrientation());
@@ -297,7 +360,7 @@ void mainLoop(SDL_Window* window,
             }
         }
 
-        if (gameStarted && !gameOver && !shipDestroyed && !waitingToRespawn && !levelClearedMessageVisible && asteroids.empty()) {
+        if (gameStarted && !gameOver && !shipDestroyed && !waitingToRespawn && !levelClearedMessageVisible && !insertCoinScreen && asteroids.empty()) {
             const int clearedLevel = game.getCurrentLevel();
             game.addScore(100 * clearedLevel);
             levelClearedMessageVisible = true;
@@ -319,7 +382,24 @@ void mainLoop(SDL_Window* window,
         const int shipsRemaining = renderHeader(renderer, game, SHIP_COLOR);
 
         // Render ship or explosion or game over
-        if (shipsRemaining == 0 && !shipExplosion) {
+        if (insertCoinScreen) {
+            // INSERT COIN attract screen
+            constexpr float INSERT_COIN_SCALE = 4.0f;
+            constexpr float SUBTITLE_SCALE = 1.5f;
+            constexpr float BLINK_PERIOD = 1.0f;
+
+            // Blink "INSERT COIN" on a 1-second cycle
+            if (std::fmod(insertCoinBlinkTimer, BLINK_PERIOD) < BLINK_PERIOD / 2.0f) {
+                TextRenderer::renderText(renderer, "INSERT COIN",
+                                        SCREEN_WIDTH / 2.0f, SCREEN_HEIGHT / 2.0f - 20.0f,
+                                        INSERT_COIN_SCALE, Colors::SILVER,
+                                        TextRenderer::Alignment::CENTER);
+            }
+            TextRenderer::renderText(renderer, "PRESS 'C' TO INSERT COIN",
+                                     SCREEN_WIDTH / 2.0f, SCREEN_HEIGHT / 2.0f + 50.0f,
+                                     SUBTITLE_SCALE, Colors::SILVER,
+                                     TextRenderer::Alignment::CENTER);
+        } else if (shipsRemaining == 0 && !shipExplosion) {
             // Game Over message
             constexpr float GAME_OVER_SCALE = 5.0f;
             TextRenderer::renderText(renderer, "GAME OVER",
@@ -369,7 +449,7 @@ void mainLoop(SDL_Window* window,
         }
 
         // Render blinking "WAIT FOR SAFE DEPLOYMENT" message when game is waiting to start
-        if (!gameStarted) {
+        if (!gameStarted && !insertCoinScreen) {
             constexpr float BLINK_PERIOD = 0.8f;  // Blink cycle duration (0.4s visible, 0.4s hidden)
             constexpr float MESSAGE_Y = SCREEN_HEIGHT - 50.0f;
             constexpr float MESSAGE_SCALE = 1.2f;

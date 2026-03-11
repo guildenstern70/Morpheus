@@ -55,6 +55,10 @@ int Game::getHighScore() const {
     return m_highScore;
 }
 
+void Game::setHighScore(int highScore) {
+    m_highScore = highScore;
+}
+
 void Game::updateHighScore() {
     m_highScore = std::max(m_highScore, m_score);
 }

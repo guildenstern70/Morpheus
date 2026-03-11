@@ -38,5 +38,6 @@ constexpr float FRAGMENT_IMPULSE_MAGNITUDE = 40.0f;
 constexpr float FRAGMENT_ANGLE_SPREAD_DEG = 45.0f;
 
 constexpr float WAITING_REGENERATE_THRESHOLD = 3.0f;
+constexpr float GAME_OVER_DISPLAY_DURATION = 3.0f;  // Seconds to show GAME OVER before INSERT COIN screen
 constexpr int TARGET_FPS = 60;
 constexpr float TARGET_FRAME_TIME_MS = 1000.0f / static_cast<float>(TARGET_FPS);

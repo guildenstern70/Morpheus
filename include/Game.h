@@ -27,6 +27,7 @@ public:
     void loseShip();
 
     int getHighScore() const;
+    void setHighScore(int highScore);
     void updateHighScore();
 
     int getCurrentLevel() const;
