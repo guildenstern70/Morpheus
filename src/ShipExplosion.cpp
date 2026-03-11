@@ -8,6 +8,7 @@
 
 #include "ShipExplosion.h"
 #include "config.h"
+#include "Random.h"
 #include <cmath>
 #include <cstdlib>
 
@@ -83,21 +84,21 @@ void ShipExplosion::createDebris(float shipX, float shipY, float shipOrientation
         Particle particle;
 
         // Random position around ship center (slightly spread)
-        const float offsetAngle = (static_cast<float>(rand()) / RAND_MAX) * 2.0f * PI;
-        const float offsetDist = (static_cast<float>(rand()) / RAND_MAX) * 5.0f;
+        const float offsetAngle = Random::uniformReal(0.0f, 2.0f * PI);
+        const float offsetDist = Random::uniformReal(0.0f, 5.0f);
         particle.x = shipX + std::cos(offsetAngle) * offsetDist;
         particle.y = shipY + std::sin(offsetAngle) * offsetDist;
 
         // Random velocity radiating outward from ship
         const float angle = (static_cast<float>(i) / NUM_PIECES) * 2.0f * PI +
-                           (static_cast<float>(rand()) / RAND_MAX - 0.5f) * 0.5f;
-        const float speed = BASE_SPEED + (static_cast<float>(rand()) / RAND_MAX) * SPEED_VARIATION;
+                           Random::uniformReal(-0.25f, 0.25f);
+        const float speed = BASE_SPEED + Random::uniformReal(0.0f, SPEED_VARIATION);
         particle.velocityX = std::cos(angle) * speed;
         particle.velocityY = std::sin(angle) * speed;
 
         // Random rotation
-        particle.rotation = (static_cast<float>(rand()) / RAND_MAX) * 360.0f;
-        particle.rotationSpeed = (static_cast<float>(rand()) / RAND_MAX - 0.5f) * 360.0f;
+        particle.rotation = Random::uniformReal(0.0f, 360.0f);
+        particle.rotationSpeed = Random::uniformReal(-0.5f, 0.5f) * 360.0f;
 
         // Create different shaped debris pieces
         switch (i % 5) {

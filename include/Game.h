@@ -18,7 +18,7 @@ class Game {
 public:
     Game();
 
-    int getScore() const;
+    [[nodiscard]] int getScore() const;
     void setScore(int score);
     void addScore(int points);
 
@@ -26,21 +26,21 @@ public:
     void setShipsRemaining(int ships);
     void loseShip();
 
-    int getHighScore() const;
+    [[nodiscard]] int getHighScore() const;
     void setHighScore(int highScore);
     void updateHighScore();
 
-    int getCurrentLevel() const;
-    int getAsteroidCountForCurrentLevel() const;
+    [[nodiscard]] int getCurrentLevel() const;
+    [[nodiscard]] int getAsteroidCountForCurrentLevel() const;
     void advanceLevel();
 
     void populateAsteroids(std::vector<Asteroid>& asteroids, int count);
-    void repopulateAsteroidsPreservingProfile(std::vector<Asteroid>& asteroids, const std::vector<Asteroid>& profile);
+    void repopulateAsteroidsPreservingProfile(std::vector<Asteroid>& asteroids, const std::vector<Asteroid>& profile) const;
 
     // Collision detection
-    bool checkCircleCollision(float x1, float y1, float r1, float x2, float y2, float r2) const;
-    bool checkShipAsteroidCollision(const Ship& ship, const Asteroid& asteroid) const;
-    bool isPositionSafe(float x, float y, float safetyRadius, const std::vector<Asteroid>& asteroids) const;
+    [[nodiscard]] bool checkCircleCollision(float x1, float y1, float r1, float x2, float y2, float r2) const;
+    [[nodiscard]] bool checkShipAsteroidCollision(const Ship& ship, const Asteroid& asteroid) const;
+    [[nodiscard]] bool isPositionSafe(float x, float y, float safetyRadius, const std::vector<Asteroid>& asteroids) const;
     std::vector<Asteroid> createFragments(const Asteroid& parent);
 
     // Collision handling

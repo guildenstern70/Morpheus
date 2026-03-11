@@ -9,6 +9,7 @@
 #include "Game.h"
 #include "Bolt.h"
 #include "config.h"
+#include "Random.h"
 
 #include <algorithm>
 #include <cmath>
@@ -20,7 +21,8 @@ Game::Game()
       m_shipsRemaining(3),
       m_highScore(0),
       m_currentLevel(1) {
-    srand(static_cast<unsigned>(time(nullptr)));
+    // Seed the C++11 RNG once at game creation
+    Random::seedFromRandomDevice();
 }
 
 int Game::getScore() const {
@@ -94,15 +96,15 @@ void Game::populateAsteroids(std::vector<Asteroid>& asteroids, int count) {
         // Try to find a non-overlapping position
         for (int attempt = 0; attempt < MAX_PLACEMENT_ATTEMPTS; ++attempt) {
             // Random position across screen
-            x = static_cast<float>(rand() % 800);
-            y = static_cast<float>(rand() % 600);
+            x = static_cast<float>(Random::uniformInt(0, 800 - 1));
+            y = static_cast<float>(Random::uniformInt(0, 600 - 1));
 
             // Random size
             constexpr Asteroid::Size sizes[] =
                 { Asteroid::Size::SMALL,
                   Asteroid::Size::MEDIUM,
                   Asteroid::Size::LARGE };
-            size = sizes[rand() % 3];
+            size = sizes[Random::uniformInt(0, 2)];
 
             // Get radius for this size
             if (size == Asteroid::Size::SMALL) {
@@ -135,13 +137,13 @@ void Game::populateAsteroids(std::vector<Asteroid>& asteroids, int count) {
         // If we couldn't find a non-overlapping position after many attempts,
         // just place it anyway (this shouldn't happen with reasonable asteroid counts)
         if (!positionFound) {
-            x = static_cast<float>(rand() % 800);
-            y = static_cast<float>(rand() % 600);
+            x = static_cast<float>(Random::uniformInt(0, 800 - 1));
+            y = static_cast<float>(Random::uniformInt(0, 600 - 1));
         }
 
         // Random velocity between MIN_VELOCITY and MAX_VELOCITY
-        const float velocityMagnitude = MIN_VELOCITY + (static_cast<float>(rand()) / RAND_MAX) * VELOCITY_RANGE;
-        const float velocityAngle = (static_cast<float>(rand()) / RAND_MAX) * 360.0f;
+        const float velocityMagnitude = MIN_VELOCITY + Random::uniformReal(0.0f, VELOCITY_RANGE);
+        const float velocityAngle = Random::uniformReal(0.0f, 360.0f);
         const float angleRadians = velocityAngle * (PI / 180.0f);
         const float velocityX = std::cos(angleRadians) * velocityMagnitude;
         const float velocityY = std::sin(angleRadians) * velocityMagnitude;
@@ -153,13 +155,14 @@ void Game::populateAsteroids(std::vector<Asteroid>& asteroids, int count) {
                                               Asteroid::Shape::SHAPE_C,
                                               Asteroid::Shape::SHAPE_D,
                                               Asteroid::Shape::SHAPE_E};
-        const Asteroid::Shape shape = shapes[rand() % (sizeof(shapes) / sizeof(shapes[0]))];
+        const std::size_t shapesCount = sizeof(shapes) / sizeof(shapes[0]);
+        const Asteroid::Shape shape = shapes[Random::choiceIndex(shapesCount)];
 
         asteroids.emplace_back(x, y, velocityX, velocityY, size, shape);
     }
 }
 
-void Game::repopulateAsteroidsPreservingProfile(std::vector<Asteroid>& asteroids, const std::vector<Asteroid>& profile) {
+void Game::repopulateAsteroidsPreservingProfile(std::vector<Asteroid>& asteroids, const std::vector<Asteroid>& profile) const {
     constexpr float MIN_VELOCITY = 2.0f;
     constexpr float MAX_VELOCITY = 6.0f;
     constexpr float VELOCITY_RANGE = MAX_VELOCITY - MIN_VELOCITY;
@@ -184,8 +187,8 @@ void Game::repopulateAsteroidsPreservingProfile(std::vector<Asteroid>& asteroids
         }
 
         for (int attempt = 0; attempt < MAX_PLACEMENT_ATTEMPTS; ++attempt) {
-            x = static_cast<float>(rand() % SCREEN_WIDTH);
-            y = static_cast<float>(rand() % SCREEN_HEIGHT);
+            x = static_cast<float>(Random::uniformInt(0, SCREEN_WIDTH - 1));
+            y = static_cast<float>(Random::uniformInt(0, SCREEN_HEIGHT - 1));
 
             bool overlaps = false;
             for (const auto& existing : regenerated) {
@@ -204,12 +207,12 @@ void Game::repopulateAsteroidsPreservingProfile(std::vector<Asteroid>& asteroids
         }
 
         if (!positionFound) {
-            x = static_cast<float>(rand() % SCREEN_WIDTH);
-            y = static_cast<float>(rand() % SCREEN_HEIGHT);
+            x = static_cast<float>(Random::uniformInt(0, SCREEN_WIDTH - 1));
+            y = static_cast<float>(Random::uniformInt(0, SCREEN_HEIGHT - 1));
         }
 
-        const float velocityMagnitude = MIN_VELOCITY + (static_cast<float>(rand()) / RAND_MAX) * VELOCITY_RANGE;
-        const float velocityAngle = (static_cast<float>(rand()) / RAND_MAX) * 360.0f;
+        const float velocityMagnitude = MIN_VELOCITY + Random::uniformReal(0.0f, VELOCITY_RANGE);
+        const float velocityAngle = Random::uniformReal(0.0f, 360.0f);
         const float angleRadians = velocityAngle * (PI / 180.0f);
         const float velocityX = std::cos(angleRadians) * velocityMagnitude;
         const float velocityY = std::sin(angleRadians) * velocityMagnitude;
@@ -278,7 +281,7 @@ std::vector<Asteroid> Game::createFragments(const Asteroid& parent) {
         return fragments;  // Small asteroids don't fragment
     }
 
-    const float baseAngle = (static_cast<float>(rand()) / RAND_MAX) * 360.0f;
+    const float baseAngle = Random::uniformReal(0.0f, 360.0f);
     const float angleSpread = 360.0f / static_cast<float>(fragmentCount);  // Evenly spread fragments
     const float impulseMag = 40.0f;   // FRAGMENT_IMPULSE_MAGNITUDE
 
