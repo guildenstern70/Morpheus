@@ -33,7 +33,7 @@ sudo apt-get install libsdl3-dev
 ### Windows
 1. Download **SDL3-devel-3.x.x-VC.zip** (Visual C++ development libraries) from [SDL3 Releases](https://github.com/libsdl-org/SDL/releases)
 2. Extract the downloaded ZIP file
-3. Create a `libs` folder in the project root directory (if it doesn't exist)
+3. Use the `libs` folder in the project root directory to store external libraries
 4. Copy the entire SDL3 folder into `libs` so that you have the following structure:
    ```
    Morpheus/

@@ -22,6 +22,6 @@ namespace Colors {
     constexpr Color GREEN = {0, 255, 0, 255};
     constexpr Color GRAY = {192, 192, 192, 255};
     constexpr Color RED = {255, 0, 255, 255};
-    constexpr Color SILVER = {222, 222, 222, 255};
+    constexpr Color SILVER = {238, 238, 238, 255};
 }
 

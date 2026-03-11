@@ -147,9 +147,13 @@ void Game::populateAsteroids(std::vector<Asteroid>& asteroids, int count) {
         const float velocityY = std::sin(angleRadians) * velocityMagnitude;
 
 
-        // Random shape
-        constexpr Asteroid::Shape shapes[] = {Asteroid::Shape::SHAPE_A, Asteroid::Shape::SHAPE_B};
-        const Asteroid::Shape shape = shapes[rand() % 2];
+        // Random shape among all available shapes
+        constexpr Asteroid::Shape shapes[] = {Asteroid::Shape::SHAPE_A,
+                                              Asteroid::Shape::SHAPE_B,
+                                              Asteroid::Shape::SHAPE_C,
+                                              Asteroid::Shape::SHAPE_D,
+                                              Asteroid::Shape::SHAPE_E};
+        const Asteroid::Shape shape = shapes[rand() % (sizeof(shapes) / sizeof(shapes[0]))];
 
         asteroids.emplace_back(x, y, velocityX, velocityY, size, shape);
     }
@@ -285,8 +289,8 @@ std::vector<Asteroid> Game::createFragments(const Asteroid& parent) {
         const float impulseX = std::cos(angleRad) * impulseMag;
         const float impulseY = std::sin(angleRad) * impulseMag;
 
-        // Alternate shapes for variety
-        const Asteroid::Shape shape = (i % 2 == 0) ? Asteroid::Shape::SHAPE_A : Asteroid::Shape::SHAPE_B;
+        // Alternate shapes for variety among fragments
+        const Asteroid::Shape shape = static_cast<Asteroid::Shape>( (i % 5) );
 
         fragments.emplace_back(
             parent.getX(),

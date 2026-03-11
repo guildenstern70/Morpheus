@@ -12,6 +12,7 @@
 
 #include <array>
 #include <cmath>
+#include <vector>
 
 
 Asteroid::Asteroid(const float x,
@@ -44,38 +45,100 @@ void Asteroid::render(SDL_Renderer* renderer, const Colors::Color& color) const 
     const float cosA = std::cos(angleRadians);
     const float sinA = std::sin(angleRadians);
 
-    if (m_shape == Shape::SHAPE_A) {
-        std::array<SDL_FPoint, 8> transformedPoints{};
-        for (size_t i = 0; i < Shapes::ASTEROID_SHAPE_A.size(); ++i) {
-            const float x = Shapes::ASTEROID_SHAPE_A[i].first * radius;
-            const float y = Shapes::ASTEROID_SHAPE_A[i].second * radius;
-            transformedPoints[i].x = m_x + (x * cosA - y * sinA);
-            transformedPoints[i].y = m_y + (x * sinA + y * cosA);
+    // Select the shape array and size based on m_shape
+    switch (m_shape) {
+        case Shape::SHAPE_A: {
+            const auto& shape = Shapes::ASTEROID_SHAPE_A;
+            std::vector<SDL_FPoint> transformedPoints(shape.size());
+            for (size_t i = 0; i < shape.size(); ++i) {
+                const float x = shape[i].first * radius;
+                const float y = shape[i].second * radius;
+                transformedPoints[i].x = m_x + (x * cosA - y * sinA);
+                transformedPoints[i].y = m_y + (x * sinA + y * cosA);
+            }
+            for (size_t i = 0; i + 1 < transformedPoints.size(); ++i) {
+                SDL_RenderLine(renderer,
+                               transformedPoints[i].x,
+                               transformedPoints[i].y,
+                               transformedPoints[i + 1].x,
+                               transformedPoints[i + 1].y);
+            }
+            break;
         }
-
-        for (size_t i = 0; i + 1 < transformedPoints.size(); ++i) {
-            SDL_RenderLine(renderer,
-                           transformedPoints[i].x,
-                           transformedPoints[i].y,
-                           transformedPoints[i + 1].x,
-                           transformedPoints[i + 1].y);
+        case Shape::SHAPE_B: {
+            const auto& shape = Shapes::ASTEROID_SHAPE_B;
+            std::vector<SDL_FPoint> transformedPoints(shape.size());
+            for (size_t i = 0; i < shape.size(); ++i) {
+                const float x = shape[i].first * radius;
+                const float y = shape[i].second * radius;
+                transformedPoints[i].x = m_x + (x * cosA - y * sinA);
+                transformedPoints[i].y = m_y + (x * sinA + y * cosA);
+            }
+            for (size_t i = 0; i + 1 < transformedPoints.size(); ++i) {
+                SDL_RenderLine(renderer,
+                               transformedPoints[i].x,
+                               transformedPoints[i].y,
+                               transformedPoints[i + 1].x,
+                               transformedPoints[i + 1].y);
+            }
+            break;
         }
-    } else {
-        std::array<SDL_FPoint, 9> transformedPoints{};
-        for (size_t i = 0; i < Shapes::ASTEROID_SHAPE_B.size(); ++i) {
-            const float x = Shapes::ASTEROID_SHAPE_B[i].first * radius;
-            const float y = Shapes::ASTEROID_SHAPE_B[i].second * radius;
-            transformedPoints[i].x = m_x + (x * cosA - y * sinA);
-            transformedPoints[i].y = m_y + (x * sinA + y * cosA);
+        case Shape::SHAPE_C: {
+            const auto& shape = Shapes::ASTEROID_SHAPE_C;
+            std::vector<SDL_FPoint> transformedPoints(shape.size());
+            for (size_t i = 0; i < shape.size(); ++i) {
+                const float x = shape[i].first * radius;
+                const float y = shape[i].second * radius;
+                transformedPoints[i].x = m_x + (x * cosA - y * sinA);
+                transformedPoints[i].y = m_y + (x * sinA + y * cosA);
+            }
+            for (size_t i = 0; i + 1 < transformedPoints.size(); ++i) {
+                SDL_RenderLine(renderer,
+                               transformedPoints[i].x,
+                               transformedPoints[i].y,
+                               transformedPoints[i + 1].x,
+                               transformedPoints[i + 1].y);
+            }
+            break;
         }
-
-        for (size_t i = 0; i + 1 < transformedPoints.size(); ++i) {
-            SDL_RenderLine(renderer,
-                           transformedPoints[i].x,
-                           transformedPoints[i].y,
-                           transformedPoints[i + 1].x,
-                           transformedPoints[i + 1].y);
+        case Shape::SHAPE_D: {
+            const auto& shape = Shapes::ASTEROID_SHAPE_D;
+            std::vector<SDL_FPoint> transformedPoints(shape.size());
+            for (size_t i = 0; i < shape.size(); ++i) {
+                const float x = shape[i].first * radius;
+                const float y = shape[i].second * radius;
+                transformedPoints[i].x = m_x + (x * cosA - y * sinA);
+                transformedPoints[i].y = m_y + (x * sinA + y * cosA);
+            }
+            for (size_t i = 0; i + 1 < transformedPoints.size(); ++i) {
+                SDL_RenderLine(renderer,
+                               transformedPoints[i].x,
+                               transformedPoints[i].y,
+                               transformedPoints[i + 1].x,
+                               transformedPoints[i + 1].y);
+            }
+            break;
         }
+        case Shape::SHAPE_E: {
+            const auto& shape = Shapes::ASTEROID_SHAPE_E;
+            std::vector<SDL_FPoint> transformedPoints(shape.size());
+            for (size_t i = 0; i < shape.size(); ++i) {
+                const float x = shape[i].first * radius;
+                const float y = shape[i].second * radius;
+                transformedPoints[i].x = m_x + (x * cosA - y * sinA);
+                transformedPoints[i].y = m_y + (x * sinA + y * cosA);
+            }
+            for (size_t i = 0; i + 1 < transformedPoints.size(); ++i) {
+                SDL_RenderLine(renderer,
+                               transformedPoints[i].x,
+                               transformedPoints[i].y,
+                               transformedPoints[i + 1].x,
+                               transformedPoints[i + 1].y);
+            }
+            break;
+        }
+        default:
+            break;
     }
 }
 

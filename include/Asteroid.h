@@ -21,7 +21,10 @@ public:
 
     enum class Shape {
         SHAPE_A,
-        SHAPE_B
+        SHAPE_B,
+        SHAPE_C,
+        SHAPE_D,
+        SHAPE_E
     };
 
     Asteroid(float x, float y, float velocityX, float velocityY, Size size, Shape shape);
