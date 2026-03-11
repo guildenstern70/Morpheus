@@ -36,7 +36,8 @@ if(MORPHEUS_COMPILE_ONLY)
     add_library(${PROJECT_NAME}Objects OBJECT ${SOURCES} ${HEADERS})
     set(MORPHEUS_TARGET ${PROJECT_NAME}Objects)
 else()
-    add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
+    add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS}
+            src/GameLoop.cpp)
     set(MORPHEUS_TARGET ${PROJECT_NAME})
 endif()
 

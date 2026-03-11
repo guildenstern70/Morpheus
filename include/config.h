@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include "colors.h"
+
 constexpr int SCREEN_WIDTH = 800;
 constexpr int SCREEN_HEIGHT = 600;
 constexpr auto WINDOW_TITLE = "Morpheus";
@@ -41,3 +43,11 @@ constexpr float WAITING_REGENERATE_THRESHOLD = 3.0f;
 constexpr float GAME_OVER_DISPLAY_DURATION = 3.0f;  // Seconds to show GAME OVER before INSERT COIN screen
 constexpr int TARGET_FPS = 60;
 constexpr float TARGET_FRAME_TIME_MS = 1000.0f / static_cast<float>(TARGET_FPS);
+
+// Ship invulnerability on respawn
+constexpr float SHIP_INVULNERABILITY_DURATION = 2.0f; // seconds
+constexpr float SHIP_INVULNERABILITY_BLINK_PERIOD = 0.50f; // seconds
+
+// Colors
+constexpr Colors::Color BACKGROUND_COLOR = Colors::BLACK;
+constexpr Colors::Color SHIP_COLOR = Colors::SILVER;
