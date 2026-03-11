@@ -2,7 +2,12 @@
 build/
 cmake-build-*/
 
+# Libs
+libs/SDL3/include/
+libs/SDL3/lib/
+
 # IDE files
+.vs/
 .vscode/
 .idea/
 .cache/

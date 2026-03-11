@@ -31,11 +31,41 @@ sudo apt-get install libsdl3-dev
 ```
 
 ### Windows
-Download SDL3 development libraries from [libsdl.org](https://www.libsdl.org/download-2.0.php)
+1. Download **SDL3-devel-3.x.x-VC.zip** (Visual C++ development libraries) from [SDL3 Releases](https://github.com/libsdl-org/SDL/releases)
+2. Extract the downloaded ZIP file
+3. Create a `libs` folder in the project root directory (if it doesn't exist)
+4. Copy the entire SDL3 folder into `libs` so that you have the following structure:
+   ```
+   Morpheus/
+   ├── libs/
+   │   └── SDL3/
+   │       ├── include/
+   │       │   └── SDL3/
+   │       │       ├── SDL.h
+   │       │       └── ...
+   │       └── lib/
+   │           └── x64/
+   │               ├── SDL3.dll
+   │               └── SDL3.lib
+   ├── src/
+   ├── include/
+   └── CMakeLists.txt
+   ```
+5. **Note**: Make sure to use the `x64` version if you're building for 64-bit (recommended)
 
 ## Building
 
+### Windows (Visual Studio)
+```powershell
+mkdir build
+cd build
+cmake ..
+cmake --build . --config Release
+```
+
+### macOS / Linux
 ```bash
+mkdir -p build
 cd build
 cmake ..
 cmake --build .
@@ -43,6 +73,17 @@ cmake --build .
 
 ## Running
 
+### Windows
+```powershell
+# From the build directory
+.\Release\Morpheus.exe
+
+# Or navigate to the Release folder
+cd Release
+.\Morpheus.exe
+```
+
+### macOS / Linux
 ```bash
 ./Morpheus
 ```
@@ -79,30 +120,64 @@ The game ends when you lose all 3 lives. Your final score is compared to the hig
 
 ### Requirements
 - C++17 or later
-- CMake 3.10 or later
-- SDL3
+- CMake 3.15 or later
+- SDL3 (see Prerequisites section above)
 
-### Step-by-Step
+### Windows
 
 1. Clone the repository:
-```bash
-git clone <repository-url>
+```powershell
+git clone https://github.com/guildenstern70/Morpheus
 cd Morpheus
 ```
 
-2. Create and navigate to build directory:
+2. Set up SDL3 (see Windows Prerequisites section above)
+
+3. Create and navigate to build directory:
+```powershell
+mkdir build
+cd build
+```
+
+4. Configure with CMake:
+```powershell
+cmake ..
+```
+
+5. Build the project:
+```powershell
+cmake --build . --config Release
+```
+
+6. Run the game:
+```powershell
+cd Release
+.\Morpheus.exe
+```
+
+### macOS / Linux
+
+1. Clone the repository:
+```bash
+git clone https://github.com/guildenstern70/Morpheus
+cd Morpheus
+```
+
+2. Install SDL3 (see Prerequisites section above)
+
+3. Create and navigate to build directory:
 ```bash
 mkdir -p build
 cd build
 ```
 
-3. Configure and build:
+4. Configure and build:
 ```bash
 cmake ..
 cmake --build .
 ```
 
-4. Run the game:
+5. Run the game:
 ```bash
 ./Morpheus
 ```
