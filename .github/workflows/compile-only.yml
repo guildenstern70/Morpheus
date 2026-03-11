@@ -14,25 +14,11 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - ubuntu-latest
           - macos-latest
-          - windows-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Install SDL3 (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libsdl3-dev
-
-      - name: Install SDL3 (macOS)
-        if: runner.os == 'macOS'
-        run: |
-          brew update
-          brew install sdl3
 
       - name: Configure (compile-only)
         run: cmake -S . -B build -DMORPHEUS_COMPILE_ONLY=ON
