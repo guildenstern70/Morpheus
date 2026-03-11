@@ -27,8 +27,8 @@ public:
     void update(float deltaSeconds);
     void render(SDL_Renderer* renderer, const Colors::Color& color) const;
 
-    bool isFinished() const;
-    float getElapsedTime() const;
+    [[nodiscard]] bool isFinished() const;
+    [[nodiscard]] float getElapsedTime() const;
 
 private:
     std::vector<Particle> m_particles;

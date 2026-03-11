@@ -18,10 +18,10 @@ public:
     void update(float deltaSeconds, float screenWidth, float screenHeight);
     void render(SDL_Renderer* renderer, const Colors::Color& color) const;
 
-    float getX() const;
-    float getY() const;
-    float getRadius() const;
-    bool isOffScreen(float screenWidth, float screenHeight) const;
+    [[nodiscard]] float getX() const;
+    [[nodiscard]] float getY() const;
+    [[nodiscard]] bool isOffScreen(float screenWidth, float screenHeight) const;
+    static float getRadius() ;
 
 private:
     float m_x;

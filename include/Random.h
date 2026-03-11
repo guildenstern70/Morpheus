@@ -1,7 +1,10 @@
-// Random.h
-// Small header-only C++11 random utility to replace rand()/srand()
-// Provides a simple API: Random::seed(...), Random::seedFromRandomDevice(),
-// Random::uniformInt(min,max), Random::uniformReal(min,max), Random::choiceIndex(n)
+//
+// Project Morpheus
+// Copyright (C) 2026 Alessio Saltarin
+//
+// This software is licensed under MIT license.
+// See LICENSE.
+//
 
 #pragma once
 

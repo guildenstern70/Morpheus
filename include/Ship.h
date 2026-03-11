@@ -28,11 +28,11 @@ public:
     // Static method to render a ship icon at a specific position
     static void renderIcon(SDL_Renderer* renderer, float x, float y, float scale);
 
-    float getX() const;
-    float getY() const;
-    float getOrientation() const;
-    float getVelocityX() const;
-    float getVelocityY() const;
+    [[nodiscard]] float getX() const;
+    [[nodiscard]] float getY() const;
+    [[nodiscard]] float getOrientation() const;
+    [[nodiscard]] float getVelocityX() const;
+    [[nodiscard]] float getVelocityY() const;
 
 private:
     float m_x;

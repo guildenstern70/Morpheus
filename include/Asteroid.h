@@ -53,7 +53,6 @@ private:
 
     void updatePosition(float deltaSeconds);
     void wrapPosition(float screenWidth, float screenHeight);
-    float getRadiusForSize() const;
-    void renderShape(SDL_Renderer* renderer, const SDL_FPoint* points, size_t pointCount) const;
+    [[nodiscard]] float getRadiusForSize() const;
 };
 

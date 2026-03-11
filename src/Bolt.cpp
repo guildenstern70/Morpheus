@@ -10,9 +10,6 @@
 #include "config.h"
 #include <cmath>
 
-constexpr float BOLT_SPEED = 400.0f;  // Speed of the bolt
-constexpr float BOLT_RADIUS = 1.0f;   // Collision radius of the bolt
-
 Bolt::Bolt(float x, float y, float angle, float shipVelocityX, float shipVelocityY)
     : m_x(x)
     , m_y(y)
@@ -71,7 +68,7 @@ float Bolt::getY() const {
     return m_y;
 }
 
-float Bolt::getRadius() const {
+float Bolt::getRadius() {
     return BOLT_RADIUS;
 }
 

@@ -1,5 +1,9 @@
 //
-// Created by Alessio Saltarin on 11/03/26.
+// Project Morpheus
+// Copyright (C) 2026 Alessio Saltarin
+//
+// This software is licensed under MIT license.
+// See LICENSE.
 //
 
 #pragma once

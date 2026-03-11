@@ -77,7 +77,7 @@ void Game::advanceLevel() {
     ++m_currentLevel;
 }
 
-void Game::populateAsteroids(std::vector<Asteroid>& asteroids, int count) {
+void Game::populateAsteroids(std::vector<Asteroid>& asteroids, int count) const {
     constexpr float MIN_VELOCITY = 2.0f;
     constexpr float MAX_VELOCITY = 6.0f;
     constexpr float VELOCITY_RANGE = MAX_VELOCITY - MIN_VELOCITY;
@@ -228,7 +228,7 @@ bool Game::checkCircleCollision(const float x1,
                                 const float r1,
                                 const float x2,
                                 const float y2,
-                                const float r2) const {
+                                const float r2) {
     const float dx = x2 - x1;
     const float dy = y2 - y1;
     const float distanceSquared = dx * dx + dy * dy;
@@ -240,7 +240,7 @@ bool Game::checkCircleCollision(const float x1,
     return distanceSquared <= (radiusSum * radiusSum);
 }
 
-bool Game::checkShipAsteroidCollision(const Ship& ship, const Asteroid& asteroid) const {
+bool Game::checkShipAsteroidCollision(const Ship& ship, const Asteroid& asteroid) {
     return checkCircleCollision(
         ship.getX(), ship.getY(), 10.0f,  // SHIP_COLLISION_RADIUS
         asteroid.getX(), asteroid.getY(), asteroid.getRadius()
@@ -250,7 +250,7 @@ bool Game::checkShipAsteroidCollision(const Ship& ship, const Asteroid& asteroid
 bool Game::isPositionSafe(const float x,
                           const float y,
                           const float safetyRadius,
-                          const std::vector<Asteroid>& asteroids) const {
+                          const std::vector<Asteroid>& asteroids) {
     for (const auto& asteroid : asteroids) {
         if (checkCircleCollision(x, y, safetyRadius,
                                 asteroid.getX(), asteroid.getY(), asteroid.getRadius())) {
@@ -326,7 +326,7 @@ bool Game::handleShipAsteroidCollisions(Ship& ship, std::vector<Asteroid>& aster
     return false;  // No collision
 }
 
-void Game::handleAsteroidAsteroidCollisions(std::vector<Asteroid>& asteroids) const {
+void Game::handleAsteroidAsteroidCollisions(std::vector<Asteroid>& asteroids) {
     for (size_t i = 0; i < asteroids.size(); ++i) {
         for (size_t j = i + 1; j < asteroids.size(); ++j) {
             if (checkCircleCollision(

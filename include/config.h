@@ -48,6 +48,10 @@ constexpr float TARGET_FRAME_TIME_MS = 1000.0f / static_cast<float>(TARGET_FPS);
 constexpr float SHIP_INVULNERABILITY_DURATION = 2.0f; // seconds
 constexpr float SHIP_INVULNERABILITY_BLINK_PERIOD = 0.50f; // seconds
 
+// Bolt
+constexpr float BOLT_SPEED = 400.0f;  // Speed of the bolt
+constexpr float BOLT_RADIUS = 1.0f;   // Collision radius of the bolt
+
 // Colors
 constexpr Colors::Color BACKGROUND_COLOR = Colors::BLACK;
 constexpr Colors::Color SHIP_COLOR = Colors::SILVER;

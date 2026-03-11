@@ -22,7 +22,7 @@ GameLoop::GameLoop()
 
     // Initial safe-deploy check
     constexpr float SPAWN_SAFETY_RADIUS = 50.0f;
-    m_gameStarted = m_game.isPositionSafe(SHIP_CENTER_X, SHIP_CENTER_Y, SPAWN_SAFETY_RADIUS, m_asteroids);
+    m_gameStarted = Game::isPositionSafe(SHIP_CENTER_X, SHIP_CENTER_Y, SPAWN_SAFETY_RADIUS, m_asteroids);
 }
 
 void GameLoop::resetGamePreserveHighScore(bool showInsertCoin) {
@@ -46,7 +46,7 @@ void GameLoop::resetGamePreserveHighScore(bool showInsertCoin) {
     m_respawnWaitingMessageBlinkTimer = 0.0f;
     m_gameStartWaitingMessageBlinkTimer = 0.0f;
     m_respawnAsteroidProfile.clear();
-    m_gameStarted = m_game.isPositionSafe(SHIP_CENTER_X, SHIP_CENTER_Y, 50.0f, m_asteroids);
+    m_gameStarted = Game::isPositionSafe(SHIP_CENTER_X, SHIP_CENTER_Y, 50.0f, m_asteroids);
     m_insertCoinScreen = showInsertCoin;
     // Reset any invulnerability state
     m_shipInvulnerable = false;
@@ -199,7 +199,7 @@ void GameLoop::mainLoop(SDL_Window* window,
                 m_game.populateAsteroids(m_asteroids, m_game.getAsteroidCountForCurrentLevel());
 
                 // Re-run safe deployment check for the new wave.
-                m_gameStarted = m_game.isPositionSafe(SHIP_CENTER_X, SHIP_CENTER_Y, 50.0f, m_asteroids);
+                m_gameStarted = Game::isPositionSafe(SHIP_CENTER_X, SHIP_CENTER_Y, 50.0f, m_asteroids);
                 if (!m_gameStarted) {
                     m_gameStartWaitingMessageBlinkTimer = 0.0f;
                     m_gameStartWaitingTime = 0.0f;
@@ -218,7 +218,7 @@ void GameLoop::mainLoop(SDL_Window* window,
                 // Only reset ship if there are lives remaining
                 if (m_game.getShipsRemaining() > 0) {
                     // Check if spawn position is safe
-                    if (m_game.isPositionSafe(SHIP_CENTER_X, SHIP_CENTER_Y, 50.0f, m_asteroids)) {
+                    if (Game::isPositionSafe(SHIP_CENTER_X, SHIP_CENTER_Y, 50.0f, m_asteroids)) {
                         // Safe to respawn immediately
                         m_ship = Ship(SHIP_CENTER_X, SHIP_CENTER_Y);
                         m_waitingToRespawn = false;
@@ -237,7 +237,7 @@ void GameLoop::mainLoop(SDL_Window* window,
 
         // If waiting to respawn, check if position is safe now
         if (m_waitingToRespawn && m_game.getShipsRemaining() > 0) {
-                if (m_game.isPositionSafe(SHIP_CENTER_X, SHIP_CENTER_Y, 50.0f, m_asteroids)) {
+                if (Game::isPositionSafe(SHIP_CENTER_X, SHIP_CENTER_Y, 50.0f, m_asteroids)) {
                 m_ship = Ship(SHIP_CENTER_X, SHIP_CENTER_Y);
                 m_waitingToRespawn = false;
                 m_respawnWaitingMessageBlinkTimer = 0.0f;  // Reset timer when respawning
@@ -267,7 +267,7 @@ void GameLoop::mainLoop(SDL_Window* window,
 
         // If game hasn't started yet (initial spawn check), check if position is safe now
         if (!m_gameStarted && !m_insertCoinScreen) {
-            if (m_game.isPositionSafe(SHIP_CENTER_X, SHIP_CENTER_Y, 50.0f, m_asteroids)) {
+            if (Game::isPositionSafe(SHIP_CENTER_X, SHIP_CENTER_Y, 50.0f, m_asteroids)) {
                 m_gameStarted = true;
                 m_gameStartWaitingMessageBlinkTimer = 0.0f;  // Reset timer when game starts
                 m_gameStartWaitingTime = 0.0f;  // Reset waiting time counter
@@ -336,7 +336,7 @@ void GameLoop::mainLoop(SDL_Window* window,
         }
 
         // Collision detection - asteroid vs asteroid (elastic bounce)
-        m_game.handleAsteroidAsteroidCollisions(m_asteroids);
+        Game::handleAsteroidAsteroidCollisions(m_asteroids);
 
         SDL_SetRenderDrawColor(renderer,
             BACKGROUND_COLOR.r,
