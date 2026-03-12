@@ -93,7 +93,7 @@ cd Release
 - **LEFT ARROW** - Rotate ship counterclockwise
 - **RIGHT ARROW** - Rotate ship clockwise
 - **UP ARROW** - Thrust (accelerate forward)
-- **SPACE** - Shoot (coming soon)
+- **SPACE** - Shoot
 - **ESC** - Exit game
 
 ## Gameplay
