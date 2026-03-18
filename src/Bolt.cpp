@@ -72,7 +72,7 @@ float Bolt::getRadius() {
     return BOLT_RADIUS;
 }
 
-bool Bolt::isOffScreen(float screenWidth, float screenHeight) const {
+bool Bolt::isOffScreen(const float screenWidth, const float screenHeight) const {
     constexpr float MARGIN = 50.0f;  // Small margin to ensure bolt is truly off-screen
     return (m_x < -MARGIN || m_x > screenWidth + MARGIN ||
             m_y < -MARGIN || m_y > screenHeight + MARGIN);

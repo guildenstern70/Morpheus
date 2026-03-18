@@ -13,7 +13,7 @@
 #include <cmath>
 
 
-Ship::Ship(float centerX, float centerY)
+Ship::Ship(const float centerX, const float centerY)
     : m_x(centerX),
       m_y(centerY),
       m_velocityX(0.0f),

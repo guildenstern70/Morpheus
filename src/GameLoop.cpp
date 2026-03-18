@@ -54,7 +54,7 @@ void GameLoop::resetGamePreserveHighScore(bool showInsertCoin) {
     m_shipInvulnerabilityBlinkTimer = 0.0f;
 }
 
-int GameLoop::renderHeader(SDL_Renderer* renderer, const Colors::Color& SHIP_COLOR) const {
+int GameLoop::renderHeader(SDL_Renderer* renderer, const Colors::Color& shipColor) const {
     constexpr float HEADER_SCALE = 2.5f;
     constexpr float SUBHEADER_SCALE = 1.5f;
     constexpr float TITLE_Y = 20.0f;
@@ -81,10 +81,10 @@ int GameLoop::renderHeader(SDL_Renderer* renderer, const Colors::Color& SHIP_COL
     const float startX = (SCREEN_WIDTH / 2.0f) - (totalIconWidth / 2.0f) + (SHIP_ICON_SPACING / 2.0f);
 
     SDL_SetRenderDrawColor(renderer,
-                           SHIP_COLOR.r,
-                           SHIP_COLOR.g,
-                           SHIP_COLOR.b,
-                           SHIP_COLOR.a);
+                           shipColor.r,
+                           shipColor.g,
+                           shipColor.b,
+                           shipColor.a);
 
     for (int i = 0; i < shipsRemaining; ++i) {
         constexpr float SHIP_ICON_SCALE = 0.8f;
