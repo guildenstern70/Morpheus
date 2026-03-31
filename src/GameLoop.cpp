@@ -25,7 +25,7 @@ GameLoop::GameLoop()
     m_gameStarted = Game::isPositionSafe(SHIP_CENTER_X, SHIP_CENTER_Y, SPAWN_SAFETY_RADIUS, m_asteroids);
 }
 
-void GameLoop::resetGamePreserveHighScore(bool showInsertCoin) {
+void GameLoop::resetGamePreserveHighScore(const bool showInsertCoin) {
     const int savedHighScore = m_game.getHighScore();
     m_game = Game();
     m_game.setHighScore(savedHighScore);
@@ -48,6 +48,9 @@ void GameLoop::resetGamePreserveHighScore(bool showInsertCoin) {
     m_respawnAsteroidProfile.clear();
     m_gameStarted = Game::isPositionSafe(SHIP_CENTER_X, SHIP_CENTER_Y, 50.0f, m_asteroids);
     m_insertCoinScreen = showInsertCoin;
+    if (showInsertCoin) {
+        m_backgroundAudio.stop();
+    }
     // Reset any invulnerability state
     m_shipInvulnerable = false;
     m_shipInvulnerabilityTimer = 0.0f;
@@ -106,6 +109,7 @@ void GameLoop::mainLoop(SDL_Window* window,
     // Local constant reused from original mainLoop
     constexpr float FIRE_COOLDOWN = 0.25f;
     m_timeSinceLastFire = m_fireCooldown; // start ready to fire
+    (void)m_backgroundAudio.initialize();
 
     // Main loop
     while (m_running) {
@@ -125,6 +129,7 @@ void GameLoop::mainLoop(SDL_Window* window,
                     } else if (m_event.key.key == SDLK_C) {
                             if (m_insertCoinScreen) {
                                 resetGamePreserveHighScore(false);
+                                (void)m_backgroundAudio.start();
                             }
                     } else if (m_event.key.key == SDLK_LEFT) {
                         m_turningLeft = true;
@@ -448,6 +453,7 @@ void GameLoop::mainLoop(SDL_Window* window,
         }
     }
 
+    m_backgroundAudio.shutdown();
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();

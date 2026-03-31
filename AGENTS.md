@@ -105,6 +105,7 @@ cmake --build .
 - Avoid introducing non-ASCII unless already present and needed.
 - Add comments only where logic is non-obvious.
 - Do not refactor unrelated code in the same change.
+- Do not handle GIT repository management (commits, branches, merges) - this will be handled by the human operator.
 
 ## 9) Safety Rules for Editing
 

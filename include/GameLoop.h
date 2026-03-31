@@ -17,6 +17,7 @@
 #include "Asteroid.h"
 #include "Bolt.h"
 #include "ShipExplosion.h"
+#include "BackgroundAudio.h"
 
 class GameLoop {
 public:
@@ -39,6 +40,7 @@ private:
 
     std::vector<Asteroid> m_asteroids;
     std::vector<Bolt> m_bolts;
+    BackgroundAudio m_backgroundAudio;
 
     // Fire control
     const float m_fireCooldown = 0.25f;

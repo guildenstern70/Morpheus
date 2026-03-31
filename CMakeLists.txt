@@ -28,8 +28,8 @@ else()
 endif()
 
 # Source files
-file(GLOB_RECURSE SOURCES "src/*.cpp")
-file(GLOB_RECURSE HEADERS "include/*.h")
+file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "src/*.cpp")
+file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS "include/*.h")
 
 if(MORPHEUS_COMPILE_ONLY)
     # Compile all project translation units without the final link step.

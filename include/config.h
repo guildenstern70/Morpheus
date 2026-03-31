@@ -52,6 +52,14 @@ constexpr float SHIP_INVULNERABILITY_BLINK_PERIOD = 0.50f; // seconds
 constexpr float BOLT_SPEED = 400.0f;  // Speed of the bolt
 constexpr float BOLT_RADIUS = 1.0f;   // Collision radius of the bolt
 
+// Background audio (classic alternating beep-bop)
+constexpr int BACKGROUND_AUDIO_SAMPLE_RATE = 48000;
+constexpr float BACKGROUND_AUDIO_GAIN = 0.5f;
+constexpr float BACKGROUND_AUDIO_TONE_DURATION_SECONDS = 0.15f;  // Tone window for each beat phase
+constexpr float BACKGROUND_AUDIO_SILENCE_DURATION_SECONDS = 1.0f;
+constexpr auto BACKGROUND_BEEP_SOUND_PATH = "assets/sounds/beat1.wav";
+constexpr auto BACKGROUND_BOP_SOUND_PATH = "assets/sounds/beat2.wav";
+
 // Colors
 constexpr Colors::Color BACKGROUND_COLOR = Colors::BLACK;
 constexpr Colors::Color SHIP_COLOR = Colors::SILVER;

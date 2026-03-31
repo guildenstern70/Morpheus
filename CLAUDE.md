@@ -73,7 +73,8 @@ Then do a quick smoke test: launch the executable, verify startup, input, and re
 - Prefer small, composable constants in `include/config.h` for gameplay tuning
 - Use OOP principles; extend with new classes when adding new entity types
 - Preserve existing style in all touched files
-- Avoid non-ASCII characters unless already present and required
+- Avoid non-ASCII characters unless already present and required 
+- Do not handle GIT repository management (commits, branches, merges) - this will be handled by the human operator.
 
 ## Safety Rules
 
