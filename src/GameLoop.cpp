@@ -55,6 +55,7 @@ void GameLoop::resetGamePreserveHighScore(const bool showInsertCoin) {
     m_shipInvulnerable = false;
     m_shipInvulnerabilityTimer = 0.0f;
     m_shipInvulnerabilityBlinkTimer = 0.0f;
+    m_fireInputBlocked = true;
 }
 
 int GameLoop::renderHeader(SDL_Renderer* renderer, const Colors::Color& shipColor) const {
@@ -127,10 +128,10 @@ void GameLoop::mainLoop(SDL_Window* window,
                     if (m_event.key.key == SDLK_ESCAPE) {
                         m_running = false;
                     } else if (m_event.key.key == SDLK_C) {
-                            if (m_insertCoinScreen) {
-                                resetGamePreserveHighScore(false);
-                                (void)m_backgroundAudio.start();
-                            }
+                        if (m_insertCoinScreen) {
+                            resetGamePreserveHighScore(false);
+                            (void)m_backgroundAudio.start();
+                        }
                     } else if (m_event.key.key == SDLK_LEFT) {
                         m_turningLeft = true;
                     } else if (m_event.key.key == SDLK_RIGHT) {
@@ -138,8 +139,11 @@ void GameLoop::mainLoop(SDL_Window* window,
                     } else if (m_event.key.key == SDLK_UP) {
                         m_thrusting = true;
                     } else if (m_event.key.key == SDLK_SPACE) {
-                        // Fire bolt if game started, not destroyed, not waiting, not in level transition, and cooldown ready
-                        if (m_gameStarted && !m_shipDestroyed && !m_waitingToRespawn && !m_levelClearedMessageVisible && !gameOver && m_timeSinceLastFire >= FIRE_COOLDOWN) {
+                        if (m_fireInputBlocked) {
+                            break;
+                        }
+                        // Fire bolt only when gameplay is active and not in attract/game over.
+                        if (!m_insertCoinScreen && m_gameStarted && !m_shipDestroyed && !m_waitingToRespawn && !m_levelClearedMessageVisible && !gameOver && m_timeSinceLastFire >= FIRE_COOLDOWN) {
                             // Calculate bolt starting position at ship's nose
                             const float shipAngleRad = m_ship.getOrientation() * (PI / 180.0f);
                             constexpr float SHIP_NOSE_OFFSET = 12.0f;  // Distance from center to nose
@@ -148,6 +152,7 @@ void GameLoop::mainLoop(SDL_Window* window,
 
                             m_bolts.emplace_back(boltStartX, boltStartY, m_ship.getOrientation(),
                                                  m_ship.getVelocityX(), m_ship.getVelocityY());
+                            m_backgroundAudio.playFireSound();
                             m_timeSinceLastFire = 0.0f;
                         }
                     }
@@ -159,6 +164,8 @@ void GameLoop::mainLoop(SDL_Window* window,
                         m_turningRight = false;
                     } else if (m_event.key.key == SDLK_UP) {
                         m_thrusting = false;
+                    } else if (m_event.key.key == SDLK_SPACE) {
+                        m_fireInputBlocked = false;
                     }
                     break;
                 default:

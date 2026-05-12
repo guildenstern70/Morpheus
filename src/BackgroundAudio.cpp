@@ -11,6 +11,7 @@
 #include <SDL3/SDL_filesystem.h>
 #include <SDL3/SDL_log.h>
 
+#include <cmath>
 #include <cstring>
 #include <string>
 #include <vector>
@@ -33,6 +34,33 @@ std::vector<std::string> buildAssetPathCandidates(const char* relativePath) {
     }
 
     return candidates;
+}
+
+std::vector<float> buildFireSoundSamples() {
+    const int sampleCount = static_cast<int>(BACKGROUND_AUDIO_SAMPLE_RATE * FIRE_SOUND_DURATION_SECONDS);
+    if (sampleCount <= 0) {
+        return {};
+    }
+
+    std::vector<float> samples;
+    samples.reserve(static_cast<std::size_t>(sampleCount));
+    for (int i = 0; i < sampleCount; ++i) {
+        const float timeSeconds = static_cast<float>(i) / static_cast<float>(BACKGROUND_AUDIO_SAMPLE_RATE);
+        const float normalized = static_cast<float>(i) / static_cast<float>(sampleCount);
+        const float pitchSweep = FIRE_SOUND_FREQUENCY * (1.0f + 1.2f * (1.0f - normalized));
+        const float harmonic = std::sin(2.0f * PI * pitchSweep * timeSeconds);
+        const float harmonic2 = 0.35f * std::sin(2.0f * PI * pitchSweep * 1.5f * timeSeconds);
+        const float harmonic3 = 0.15f * std::sin(2.0f * PI * pitchSweep * 2.1f * timeSeconds);
+        const float attackTimeSeconds = FIRE_SOUND_DURATION_SECONDS * 0.18f;
+        const float attack = (timeSeconds < attackTimeSeconds)
+            ? (timeSeconds / attackTimeSeconds)
+            : 1.0f;
+        const float release = 1.0f - normalized;
+        const float envelope = attack * release;
+        samples.push_back((harmonic + harmonic2 + harmonic3) * envelope * FIRE_SOUND_GAIN);
+    }
+
+    return samples;
 }
 }  // namespace
 
@@ -67,6 +95,10 @@ bool BackgroundAudio::initialize() {
                     "Background audio disabled: unable to load beat sounds");
         shutdown();
         return false;
+    }
+
+    if (m_fireSamples.empty()) {
+        m_fireSamples = buildFireSoundSamples();
     }
 
     resetSequence();
@@ -122,6 +154,18 @@ void BackgroundAudio::shutdown() {
     m_bopSamples.clear();
 }
 
+void BackgroundAudio::playFireSound() {
+    if (!m_audioStream) {
+        return;
+    }
+
+    if (m_fireSamples.empty()) {
+        m_fireSamples = buildFireSoundSamples();
+    }
+
+    m_fireTriggerCounter.fetch_add(1, std::memory_order_acq_rel);
+}
+
 void SDLCALL BackgroundAudio::audioCallback(void* userData,
                                             SDL_AudioStream* stream,
                                             int additionalAmount,
@@ -141,6 +185,13 @@ void BackgroundAudio::fillStream(SDL_AudioStream* stream, int additionalAmount) 
         return;
     }
 
+    const int fireTriggerToken = m_fireTriggerCounter.load(std::memory_order_acquire);
+    if (fireTriggerToken != m_firePlaybackToken) {
+        m_firePlaybackToken = fireTriggerToken;
+        m_fireSampleIndex = 0;
+    }
+    const int fireSampleCount = static_cast<int>(m_fireSamples.size());
+
     std::vector<float> samples(static_cast<std::size_t>(sampleCount), 0.0f);
     const float sampleIntervalSeconds = 1.0f / static_cast<float>(BACKGROUND_AUDIO_SAMPLE_RATE);
 
@@ -158,6 +209,11 @@ void BackgroundAudio::fillStream(SDL_AudioStream* stream, int additionalAmount) 
         if (m_phaseElapsedSeconds >= phaseDuration) {
             m_phaseElapsedSeconds -= phaseDuration;
             advancePhase();
+        }
+
+        if (fireSampleCount > 0 && m_fireSampleIndex < fireSampleCount) {
+            samples[static_cast<std::size_t>(i)] += m_fireSamples[static_cast<std::size_t>(m_fireSampleIndex)];
+            ++m_fireSampleIndex;
         }
     }
 
@@ -273,6 +329,3 @@ void BackgroundAudio::resetSequence() {
     m_phaseElapsedSeconds = 0.0f;
     m_toneSampleIndex = 0;
 }
-
-
-

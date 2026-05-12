@@ -60,6 +60,11 @@ constexpr float BACKGROUND_AUDIO_SILENCE_DURATION_SECONDS = 1.0f;
 constexpr auto BACKGROUND_BEEP_SOUND_PATH = "assets/sounds/beat1.wav";
 constexpr auto BACKGROUND_BOP_SOUND_PATH = "assets/sounds/beat2.wav";
 
+// Fire sound configuration (procedurally generated)
+constexpr float FIRE_SOUND_DURATION_SECONDS = 0.12f;
+constexpr float FIRE_SOUND_FREQUENCY = 880.0f;
+constexpr float FIRE_SOUND_GAIN = 0.55f;
+
 // Colors
 constexpr Colors::Color BACKGROUND_COLOR = Colors::BLACK;
 constexpr Colors::Color SHIP_COLOR = Colors::SILVER;

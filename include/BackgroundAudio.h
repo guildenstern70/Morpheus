@@ -9,6 +9,7 @@
 #pragma once
 
 #include <SDL3/SDL_audio.h>
+#include <atomic>
 #include <vector>
 
 class BackgroundAudio {
@@ -20,6 +21,7 @@ public:
     [[nodiscard]] bool start();
     void stop();
     void shutdown();
+    void playFireSound();
 
 private:
     enum class Phase {
@@ -49,7 +51,10 @@ private:
     std::vector<float> m_beepSamples;
     std::vector<float> m_bopSamples;
     int m_toneSampleIndex = 0;
+    std::vector<float> m_fireSamples;
+    int m_fireSampleIndex = 0;
+    int m_firePlaybackToken = 0;  // audio thread-local token for retriggering
+    std::atomic<int> m_fireTriggerCounter = 0;
 };
-
 
 

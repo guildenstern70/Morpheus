@@ -45,6 +45,7 @@ private:
     // Fire control
     const float m_fireCooldown = 0.25f;
     float m_timeSinceLastFire = m_fireCooldown;
+    bool m_fireInputBlocked = true;
 
     // Explosion / respawn state
     std::unique_ptr<ShipExplosion> m_shipExplosion = nullptr;
@@ -77,4 +78,3 @@ private:
     // the INSERT COIN screen will be shown after reset.
     void resetGamePreserveHighScore(bool showInsertCoin);
 };
-
