@@ -14,7 +14,7 @@ Agent onboarding and working agreement for the `Morpheus` repository.
   - Shooting with Space bar (bolts inherit ship velocity, with a fire cooldown)
   - Thrust flame visual at ship rear when accelerating
   - Screen wraps toroidally (edges loop around like a sphere)
-  - 5 asteroids spawn randomly on screen with random velocities (2-6 units/sec)
+  - 2 big asteroids spawn randomly on level 1 with random velocities (2-6 units/sec)
   - Progressive waves: each cleared level increases asteroid count (`+2` per level)
   - Asteroids rotate slowly at 20°/sec
   - Ship explosion animation (~2 seconds) before respawn

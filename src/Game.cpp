@@ -90,30 +90,14 @@ void Game::populateAsteroids(std::vector<Asteroid>& asteroids, int count) const 
         bool positionFound = false;
         float x = 0.0f;
         float y = 0.0f;
-        Asteroid::Size size = Asteroid::Size::SMALL;
-        float radius = 0.0f;
+        constexpr Asteroid::Size size = Asteroid::Size::LARGE;
+        constexpr float radius = ASTEROID_LARGE_RADIUS;
 
         // Try to find a non-overlapping position
         for (int attempt = 0; attempt < MAX_PLACEMENT_ATTEMPTS; ++attempt) {
             // Random position across screen
             x = static_cast<float>(Random::uniformInt(0, 800 - 1));
             y = static_cast<float>(Random::uniformInt(0, 600 - 1));
-
-            // Random size
-            constexpr Asteroid::Size sizes[] =
-                { Asteroid::Size::SMALL,
-                  Asteroid::Size::MEDIUM,
-                  Asteroid::Size::LARGE };
-            size = sizes[Random::uniformInt(0, 2)];
-
-            // Get radius for this size
-            if (size == Asteroid::Size::SMALL) {
-                radius = ASTEROID_SMALL_RADIUS;
-            } else if (size == Asteroid::Size::MEDIUM) {
-                radius = ASTEROID_MEDIUM_RADIUS;
-            } else {
-                radius = ASTEROID_LARGE_RADIUS;
-            }
 
             // Check if this position overlaps with any existing asteroid
             bool overlaps = false;

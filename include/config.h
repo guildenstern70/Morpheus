@@ -30,7 +30,7 @@ constexpr float ASTEROID_MEDIUM_RADIUS = 32.0f;
 constexpr float ASTEROID_SMALL_RADIUS = 16.0f;
 constexpr float ASTEROID_ROTATION_SPEED_DEG_PER_SEC = 20.0f;
 constexpr float ASTEROID_BASE_SPEED = 40.0f;
-constexpr int LEVEL_ONE_ASTEROID_COUNT = 5;
+constexpr int LEVEL_ONE_ASTEROID_COUNT = 2;
 constexpr int LEVEL_ASTEROID_INCREMENT = 2;
 constexpr float LEVEL_CLEARED_MESSAGE_DURATION = 1.5f;
 
