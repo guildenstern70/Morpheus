@@ -154,7 +154,11 @@ void Game::populateAsteroids(std::vector<Asteroid>& asteroids, int count) const 
                                               Asteroid::Shape::SHAPE_B,
                                               Asteroid::Shape::SHAPE_C,
                                               Asteroid::Shape::SHAPE_D,
-                                              Asteroid::Shape::SHAPE_E};
+                                              Asteroid::Shape::SHAPE_E,
+                                              Asteroid::Shape::SHAPE_F,
+                                              Asteroid::Shape::SHAPE_G,
+                                              Asteroid::Shape::SHAPE_H,
+                                              Asteroid::Shape::SHAPE_I};
         const std::size_t shapesCount = sizeof(shapes) / sizeof(shapes[0]);
         const Asteroid::Shape shape = shapes[Random::choiceIndex(shapesCount)];
 
@@ -270,36 +274,52 @@ std::vector<Asteroid> Game::createFragments(const Asteroid& parent) {
     if (parent.getRadius() == 48.0f) {  // LARGE
         fragmentSize = Asteroid::Size::MEDIUM;
         shouldFragment = true;
-        fragmentCount = 3;  // LARGE breaks into 3 MEDIUM pieces
+        fragmentCount = 3;  // LARGE breaks into 3 equal MEDIUM pieces
     } else if (parent.getRadius() == 32.0f) {  // MEDIUM
         fragmentSize = Asteroid::Size::SMALL;
         shouldFragment = true;
-        fragmentCount = 5;  // MEDIUM breaks into 5 SMALL pieces
+        fragmentCount = 3;  // MEDIUM breaks into 3 equal SMALL pieces
     }
 
     if (!shouldFragment) {
         return fragments;  // Small asteroids don't fragment
     }
 
+    constexpr Asteroid::Shape shapes[] = {
+        Asteroid::Shape::SHAPE_A,
+        Asteroid::Shape::SHAPE_B,
+        Asteroid::Shape::SHAPE_C,
+        Asteroid::Shape::SHAPE_D,
+        Asteroid::Shape::SHAPE_E,
+        Asteroid::Shape::SHAPE_F,
+        Asteroid::Shape::SHAPE_G,
+        Asteroid::Shape::SHAPE_H,
+        Asteroid::Shape::SHAPE_I
+    };
+    const std::size_t shapesCount = sizeof(shapes) / sizeof(shapes[0]);
+
     const float baseAngle = Random::uniformReal(0.0f, 360.0f);
-    const float angleSpread = 360.0f / static_cast<float>(fragmentCount);  // Evenly spread fragments
-    const float impulseMag = 40.0f;   // FRAGMENT_IMPULSE_MAGNITUDE
+    const float angleStep = 360.0f / static_cast<float>(fragmentCount);
 
     for (int i = 0; i < fragmentCount; ++i) {
-        const float angle = baseAngle + static_cast<float>(i) * angleSpread;
+        // Asymmetric angle: add random jitter to evenly-spaced sectors
+        const float angleJitter = Random::uniformReal(-25.0f, 25.0f);
+        const float angle = baseAngle + static_cast<float>(i) * angleStep + angleJitter;
         const float angleRad = angle * (PI / 180.0f);
 
-        const float impulseX = std::cos(angleRad) * impulseMag;
-        const float impulseY = std::sin(angleRad) * impulseMag;
+        // Asymmetric speed vector per fragment (between 30 and 75 units/sec)
+        const float impulseMag = Random::uniformReal(30.0f, 75.0f);
+        const float velocityX = parent.getVelocityX() * 0.5f + std::cos(angleRad) * impulseMag;
+        const float velocityY = parent.getVelocityY() * 0.5f + std::sin(angleRad) * impulseMag;
 
-        // Alternate shapes for variety among fragments
-        const Asteroid::Shape shape = static_cast<Asteroid::Shape>( (i % 5) );
+        // Asymmetric, random shape for each fragment
+        const Asteroid::Shape shape = shapes[Random::choiceIndex(shapesCount)];
 
         fragments.emplace_back(
             parent.getX(),
             parent.getY(),
-            impulseX,
-            impulseY,
+            velocityX,
+            velocityY,
             fragmentSize,
             shape
         );

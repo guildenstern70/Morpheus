@@ -24,7 +24,11 @@ public:
         SHAPE_B,
         SHAPE_C,
         SHAPE_D,
-        SHAPE_E
+        SHAPE_E,
+        SHAPE_F,
+        SHAPE_G,
+        SHAPE_H,
+        SHAPE_I
     };
 
     Asteroid(float x, float y, float velocityX, float velocityY, Size size, Shape shape);

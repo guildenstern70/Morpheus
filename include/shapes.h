@@ -77,5 +77,60 @@ namespace Shapes {
         {-0.4f, -0.8f},             // upper-left
         {0.0f, -1.0f}               // Close the shape
     }};
+
+    // SHAPE_F: Jagged, cratered star-like asteroid
+    constexpr std::array<std::pair<float, float>, 11> ASTEROID_SHAPE_F = {{
+        {0.0f, -1.0f},              // Top peak
+        {0.3f, -0.6f},              // Inner notch
+        {0.95f, -0.7f},             // Upper right spike
+        {0.6f, -0.1f},              // Right inset
+        {0.9f, 0.5f},               // Lower right peak
+        {0.3f, 0.4f},               // Lower right notch
+        {0.0f, 0.95f},              // Bottom
+        {-0.5f, 0.5f},              // Lower left
+        {-0.9f, 0.1f},              // Left peak
+        {-0.4f, -0.5f},             // Upper left notch
+        {0.0f, -1.0f}               // Close the shape
+    }};
+
+    // SHAPE_G: Diamond-like / elongated crystalline wedge
+    constexpr std::array<std::pair<float, float>, 8> ASTEROID_SHAPE_G = {{
+        {-0.2f, -1.0f},             // Top
+        {0.7f, -0.8f},              // Upper right
+        {0.95f, -0.1f},             // Right tip
+        {0.4f, 0.7f},               // Lower right
+        {-0.1f, 0.9f},              // Bottom
+        {-0.8f, 0.6f},              // Lower left
+        {-0.95f, -0.3f},            // Left tip
+        {-0.2f, -1.0f}              // Close the shape
+    }};
+
+    // SHAPE_H: Asymmetric blocky polygon with deep notch
+    constexpr std::array<std::pair<float, float>, 10> ASTEROID_SHAPE_H = {{
+        {0.4f, -0.95f},             // Top right
+        {0.9f, -0.4f},              // Upper right
+        {0.5f, 0.0f},               // Middle right notch
+        {0.85f, 0.65f},             // Lower right
+        {0.2f, 0.95f},              // Bottom right
+        {-0.4f, 0.85f},             // Bottom left
+        {-0.75f, 0.3f},             // Lower left
+        {-0.95f, -0.3f},            // Upper left
+        {-0.3f, -0.7f},             // Top left notch
+        {0.4f, -0.95f}              // Close the shape
+    }};
+
+    // SHAPE_I: Crescent / hook-like irregular asteroid
+    constexpr std::array<std::pair<float, float>, 10> ASTEROID_SHAPE_I = {{
+        {-0.1f, -1.0f},             // Top
+        {0.5f, -0.8f},              // Upper right
+        {0.8f, -0.2f},              // Right peak
+        {0.7f, 0.5f},               // Lower right
+        {0.1f, 0.9f},               // Bottom right
+        {-0.4f, 0.95f},             // Bottom left
+        {-0.85f, 0.45f},            // Lower left peak
+        {-0.6f, 0.0f},              // Left inset
+        {-0.8f, -0.5f},             // Upper left
+        {-0.1f, -1.0f}              // Close the shape
+    }};
 }
 
